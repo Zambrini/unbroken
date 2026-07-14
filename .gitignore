@@ -1,0 +1,15 @@
+node_modules/
+dist/
+.playwright-cli/
+.DS_Store
+artifacts/*.png
+artifacts/*.webm
+artifacts/*.yml
+!artifacts/.gitkeep
+
+# Preserve approved visual references and selected checkpoint evidence even
+# when a user-level Git ignore excludes PNG files globally.
+!docs/concepts/
+!docs/concepts/*.png
+!docs/checkpoints/
+!docs/checkpoints/**/*.png
