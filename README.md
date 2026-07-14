@@ -6,7 +6,7 @@ UNBROKEN is a desktop-first 2D boss-arena prototype. You are the current challen
 
 - **Version:** `0.5.0` Arena Materialized checkpoint
 - **Goal:** make the duel feel staged inside a constructed global broadcast venue while preserving the proven attack and collision contract.
-- **Next checkpoint:** selected after replaying the shipped build and identifying the highest-leverage player-visible combat weakness.
+- **Next checkpoint:** `0.6.0` Combatants Forged — replace only the procedural actor bodies with reproducible Blender-authored top-down sprites.
 - **Verified:** 28 automated checks plus concept-matched entry, dash-counter and V.37 pressure states, a real-input full run, mobile/reduced-motion checks, clean console/network results, and same-browser performance evidence.
 
 This build is deliberately local and on rails. The audience, queue, challengers, and post-victory evolution are simulated presentation—not a live multiplayer service or trained AI.

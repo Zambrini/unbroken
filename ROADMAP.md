@@ -135,6 +135,38 @@ has no overflow or shimmer; reduced-motion removes nonessential venue motion;
 tests, console, and network remain clean; and the V.37 180-frame sample stays at
 or below 10ms p95 and 12ms maximum in the same environment as the 0.4.0 baseline.
 
+### `0.6.0` — Combatants Forged
+
+Status: **selected after public `0.5.0` replay — in progress**
+
+With the venue materialized, the procedural challenger wedge and layered HEIR
+polygons are now the largest remaining gap from the approved concepts. Forge
+only the two combatants as reproducible Blender-authored top-down sprites while
+keeping the validated 2D fight intact.
+
+- Create one reproducible Blender source scene and render script for the
+  challenger, HEIR V.01 sealed/open, and HEIR V.37 sealed/open states.
+- Give the challenger a narrow white lance/delta hull with charcoal structure,
+  cyan channels, and twin engines; keep its opaque body coherent with the
+  existing 14-unit collider.
+- Build V.01 from four beveled armor assemblies around a transparent core
+  socket. V.37 must visibly inherit that rig before adding restrained mutation
+  spines, pods, and red/magenta channels.
+- Load five transparent local PNGs as persistent Pixi sprites. Preserve the
+  procedural core, aim line, shots, dash streak, ghosts, particles, hit punch,
+  forecasts, danger, safe route, and V.37 energy rails.
+- Preserve camera, controls, audio, attack scripts, timing, damage, collision,
+  safe answers, HUD, arena, and reduced-motion contract.
+- Keep Blender offline: no runtime 3D, GLB, Three.js, shaders, normal maps,
+  directional sprite sheets, skeletal animation, or renderer rewrite.
+
+Exit gate: at 1440x900 the entry, real-input dash-counter, and V.37 pressure
+states read as the same constructed machines shown in the concepts; open armor,
+white core, challenger aim, dash ghosts, and V.37 lineage remain immediate; no
+opaque sprite crosses its validated collision boundary; the complete V.01 to
+V.37 run remains winnable by real input; mobile/reduced-motion, console/network,
+tests, and performance remain clean; and all source renders are reproducible.
+
 ## Future validation — shared arena
 
 Status: **not committed**

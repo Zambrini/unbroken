@@ -252,6 +252,9 @@ Mobile and touch devices receive the read-only spectator presentation.
 
 ## Next transmission
 
-Unshipped. The director begins with a fresh playthrough and selects one bounded,
-high-leverage player-visible weakness. Depth, weight, readability, and control
-feel take priority over additional bosses, modes, progression, or content lists.
+`0.6.0 — Combatants Forged` is selected after replaying the public `0.5.0`
+build beside the approved concepts. The materialized venue now exposes the
+procedural challenger wedge and HEIR polygons as the largest visual gap. The
+next checkpoint uses Blender only as an offline source for five reproducible
+top-down sprites; runtime 3D, combat changes, new actors, attacks, modes, and
+progression remain out of scope.
