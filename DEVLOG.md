@@ -6,6 +6,52 @@ what remains intentionally outside the build.
 
 The public version is available through the in-game **PROJECT / DEVLOG** link.
 
+## `0.2.0` — Make the punish contract real
+
+- **Shipped:** 2026-07-14
+- **Player impact:** every punish now demands approach, aim, and an honest decision about whether faster damage is worth entering the next threat without dash.
+
+The vertical slice already described a strong choice—dash into HEIR's opening or
+hold the dash for safety—but the implementation did not force it. The challenger
+started inside effective range, could overlap the boss, and could damage a broad
+boss hitbox. This checkpoint fixes those contradictions without adding a new
+attack, mode, progression layer, or secondary system.
+
+### What changed in the fight
+
+- The challenger starts outside the dashed 270-unit `BREAK RANGE`, so standing
+  still cannot convert an opening into damage.
+- HEIR's 96-unit body excludes the challenger's full 14-unit collider during
+  both walking and dashing; the player can circle the machine but cannot occupy
+  or tunnel through it.
+- Damage requires a shot to intersect the exposed 20-unit core. A shot that
+  reaches armor instead returns `CORE MISSED` rather than silently counting.
+- Dash recovery now lasts 2.4 seconds. Walking in preserves the resource;
+  dashing in reaches the same punish sooner but remains unavailable when the
+  next active threat begins. A dash used earlier to evade is ready by then.
+
+### What was verified
+
+- A stationary rendered state remains outside range and displays the approach
+  instruction.
+- Separate walk-in and dash-in rendered states both show legitimate `CORE HIT`
+  feedback during the opening.
+- A fourth rendered state captures the next active threat with dash still at
+  `0.6s`, alongside the consequence of the aggressive commitment.
+- Off-axis fire held through an opening left HEIR at 30 integrity and returned
+  `CORE MISSED`; centered fire then dealt damage. A real-input run completed
+  V.01 and V.37 through `LAST CONQUEROR`, with debug support used only to keep
+  the challenger alive for observation.
+- The automated suite grew from 21 to 26 passing checks, adding contracts for
+  spawn/range geometry, full-collider boss exclusion, actual hit/miss/sealed/
+  out-of-range shot outcomes, and dash recovery across both authored timelines.
+
+### Kept out of this checkpoint
+
+No new attacks, boss versions, modes, progression, networking, or content were
+added. Visual mass, audio weight, onboarding, and broader spectator depth remain
+candidate weaknesses for future cycles, chosen only after replay.
+
 ## `0.1.1` — The arena starts before audio
 
 - **Shipped:** 2026-07-14

@@ -21,12 +21,15 @@ export const ARENA_BOUNDS: ArenaBounds = {
 
 export const COMBAT_TUNING = {
   fixedStepMs: 1000 / 60,
+  playerStart: { x: 330, y: 210 },
   playerRadius: 14,
-  bossRadius: 52,
+  breakRange: 270,
+  bossBodyRadius: 96,
+  bossCoreRadius: 20,
   playerMoveSpeed: 260,
   dashDistance: 168,
   dashDurationMs: 140,
-  dashCooldownMs: 1_250,
+  dashCooldownMs: 2_400,
   shotRadius: 4,
   shotSpeed: 920,
   shotIntervalMs: 120,

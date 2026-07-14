@@ -26,9 +26,43 @@ export interface Ring {
   readonly halfWidth: number;
 }
 
+export type BossShotOutcome = 'none' | 'hit' | 'core-sealed' | 'enter-break-range' | 'core-missed';
+
 export function circlesIntersect(a: Circle, b: Circle): boolean {
   const combinedRadius = Math.max(0, a.radius) + Math.max(0, b.radius);
   return distanceSquared(a.center, b.center) <= combinedRadius * combinedRadius;
+}
+
+export function rayIntersectsCircle(origin: Vec2, direction: Vec2, circle: Circle): boolean {
+  const directionLengthSquared = dot(direction, direction);
+  const radius = Math.max(0, circle.radius);
+  if (directionLengthSquared === 0) {
+    return distanceSquared(origin, circle.center) <= radius * radius;
+  }
+
+  const projection = Math.max(0, dot(subtract(circle.center, origin), direction) / directionLengthSquared);
+  const closest = add(origin, scale(direction, projection));
+  return distanceSquared(closest, circle.center) <= radius * radius;
+}
+
+export function resolveBossShotCollision(options: {
+  shot: Circle;
+  core: Circle;
+  armor: Circle;
+  bossVulnerable: boolean;
+  armed: boolean;
+  coreAligned: boolean;
+}): BossShotOutcome {
+  const { shot, core, armor, bossVulnerable, armed, coreAligned } = options;
+  if (circlesIntersect(shot, core)) {
+    if (!bossVulnerable) return 'core-sealed';
+    return armed ? 'hit' : 'enter-break-range';
+  }
+
+  if (!circlesIntersect(shot, armor)) return 'none';
+  if (!bossVulnerable) return 'core-sealed';
+  if (!armed) return 'enter-break-range';
+  return coreAligned ? 'none' : 'core-missed';
 }
 
 export function closestPointOnSegment(point: Vec2, from: Vec2, to: Vec2): Vec2 {

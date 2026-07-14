@@ -32,11 +32,26 @@ Make audio startup best-effort so the player always reaches the countdown immedi
 
 Exit gate: every audio fault mode enters playable combat immediately with no unhandled error, while normal audio and mute behavior still work.
 
-## After `0.1.1` — combat contract checkpoint
+## `0.2.0` — Make the Punish Contract Real
 
-Status: **next director cycle — selected only after replay**
+Status: **shipped 2026-07-14**
 
-Replay the shipped build and choose one player-visible weakness in movement, dash commitment, aim precision, attack readability, impact, or pacing. Compare the relevant live state with the approved concept when visual execution is the limiting gap. No new systems during this pass.
+The original slice described a dash-versus-safety tradeoff, but the player began inside effective range, could overlap HEIR, and could damage a broad boss hitbox. This checkpoint makes that promise real without adding a parallel system.
+
+- Spawn the challenger outside the 270-unit `BREAK RANGE`.
+- Keep the challenger's full 14-unit collider outside HEIR's 96-unit body radius.
+- Require every damaging shot to intersect the exposed 20-unit core; armor-only aim returns `CORE MISSED`.
+- Extend dash recovery to 2.4 seconds: an opening dash remains committed into the next active threat, while an earlier evasive dash recovers before it.
+- Preserve walking as the slower, safer route into the same opening.
+- Cover the combat contract with deterministic checks plus rendered range, precision, commitment, and natural-completion evidence.
+
+Exit gate: standing still cannot punish; walking in can punish without spending dash; dashing in reaches the opening sooner; inaccurate fire cannot damage HEIR; and an opening dash is still cooling down when the next threat activates.
+
+## After `0.2.0` — next director cycle
+
+Status: **unshipped — selected only after replay**
+
+Replay the shipped build and choose one player-visible weakness in movement, attack readability, impact, audio weight, onboarding, or visual authority. Compare the relevant live state with the approved concept when visual execution is the limiting gap. No new systems during this pass.
 
 ## Future validation — shared arena
 

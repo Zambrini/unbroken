@@ -4,9 +4,10 @@ UNBROKEN is a desktop-first 2D boss-arena prototype. You are the current challen
 
 ## Status
 
-- **Version:** `0.1.1` vertical slice
-- **Goal:** prove the controls, fixed arena camera, dodge-and-punish combat, `DASH CATCH` pressure state, and victory payoff in one 5–10 minute session.
+- **Version:** `0.2.0` combat-contract checkpoint
+- **Goal:** make the original dodge-and-punish promise mechanically true: approach from outside range, aim through HEIR's armor at the exposed core, and decide whether a faster dash-in punish is worth entering the next threat without dash.
 - **Next checkpoint:** selected after replaying the shipped build and identifying the highest-leverage player-visible combat weakness.
+- **Verified:** 26 automated checks plus rendered range, precision, commitment, and full-run evidence.
 
 This build is deliberately local and on rails. The audience, queue, challengers, and post-victory evolution are simulated presentation—not a live multiplayer service or trained AI.
 
@@ -37,10 +38,11 @@ Mobile and touch devices receive the spectator presentation only; touch gameplay
 ## The slice
 
 1. Enter a 45-second round against `HEIR // V.01` after a three-second countdown.
-2. Read a dashed magenta warning, evade the solid red attack, and shoot only during the short white-core opening.
-3. Choose between committing the dash to reach the punish window or reserving it as an escape.
-4. Defeat V.01 and watch the local simulation jump forward to evolved `HEIR // V.37: DASH CATCH`.
-5. Face a second 45-second pressure round in which HEIR marks the likely dash endpoint, then win the recorded-champion payoff. Defeat retries the current round rather than resetting the run.
+2. Start outside the dashed `BREAK RANGE`, read a dashed magenta warning, and evade the solid red attack while your full collider stays outside HEIR's body.
+3. During the short opening, walk into range safely or commit a dash to arrive sooner. The dash then remains unavailable for 2.4 seconds, into the next active threat.
+4. Land shots on the exposed 20-unit white core. Armor-only shots ricochet with `CORE MISSED`; being in range alone is not enough.
+5. Defeat V.01 and watch the local simulation jump forward to evolved `HEIR // V.37: DASH CATCH`.
+6. Face a second 45-second pressure round in which HEIR marks the likely dash endpoint, then win the recorded-champion payoff. Defeat retries the current round rather than resetting the run.
 
 Warnings are deterministic and readable: dashed magenta means queued danger; solid red means active damage; white means a vulnerable target; cyan belongs to the challenger.
 
@@ -69,9 +71,10 @@ npm run preview
 - [Roadmap](ROADMAP.md)
 - [Changelog](CHANGELOG.md)
 - [Director's devlog](DEVLOG.md)
+- [`0.2.0` checkpoint evidence](docs/checkpoints/0.2.0/README.md)
 - [Companion website](public/project/index.html)
 - Concept screens: [entry](docs/concepts/01-entry-v01.png), [dash counter](docs/concepts/02-dash-counter.png), [DASH CATCH](docs/concepts/03-dash-catch-v37.png)
 
-## Deliberately excluded from `0.1.1`
+## Deliberately excluded from `0.2.0`
 
 Real networking, a global queue, accounts, chat, AI training, server persistence, matchmaking, controller/touch play, broad progression, multiple modes, multiple bosses, inventories, cosmetics, content catalogs, and frame-by-frame AI control.

@@ -2,6 +2,21 @@
 
 All notable changes are recorded here. The project uses semantic versioning.
 
+## [0.2.0] — 2026-07-14
+
+### Changed
+
+- Moved the challenger spawn outside the 270-unit `BREAK RANGE`, so every punish now requires a visible approach.
+- Made HEIR's 96-unit body solid against the challenger's full 14-unit collider during both movement and dash, including fixed-step tunneling protection.
+- Replaced broad boss damage with core-accurate collision: shots must intersect the exposed 20-unit core, while armor-only aim ricochets with `CORE MISSED`.
+- Extended dash recovery to 2.4 seconds. An opening dash reaches the punish sooner but remains committed into the next active threat; an earlier evasive dash recovers before that threat, and walking in remains the slower safe option.
+- Added a readable dashed break-range boundary and contextual approach, core-hit, and core-miss feedback.
+
+### Verified
+
+- Expanded the automated suite from 21 to 26 passing checks with contracts for outside-range spawn, full-collider boss exclusion, real shot outcomes, and dash recovery timing across both boss versions.
+- Preserved rendered evidence for stationary range denial, walk-in and dash-in punishment, core misses and hits, committed dash recovery, and natural two-round completion.
+
 ## [0.1.1] — 2026-07-14
 
 ### Fixed

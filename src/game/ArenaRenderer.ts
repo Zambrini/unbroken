@@ -1,5 +1,6 @@
 import { Application, Container, Graphics } from 'pixi.js';
 import {
+  COMBAT_TUNING,
   fromAngle,
   type PatternSample,
   type Vec2,
@@ -8,8 +9,6 @@ import {
 export const WORLD_WIDTH = 1600;
 export const WORLD_HEIGHT = 900;
 export const WORLD_ORIGIN: Vec2 = { x: 800, y: 430 };
-export const BREAK_RANGE = 270;
-
 const COLORS = {
   void: 0x05070c,
   floor: 0x0a1020,
@@ -170,7 +169,7 @@ export class ArenaRenderer {
         .stroke({ color: COLORS.cyan, alpha: 0.42, width: 2 });
     }
     if (frame.bossVulnerable) {
-      this.dashedCircle(g, WORLD_ORIGIN.x, WORLD_ORIGIN.y, BREAK_RANGE, 18, 12, COLORS.cyan, 0.25);
+      this.dashedCircle(g, WORLD_ORIGIN.x, WORLD_ORIGIN.y, COMBAT_TUNING.breakRange, 18, 12, COLORS.cyan, 0.25);
     }
   }
 

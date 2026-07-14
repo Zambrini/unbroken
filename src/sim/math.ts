@@ -81,3 +81,23 @@ export function clampToArena(
     minY <= maxY ? clamp(position.y, minY, maxY) : (bounds.minY + bounds.maxY) / 2,
   );
 }
+
+export function clampOutsideCircle(
+  position: Vec2,
+  center: Vec2,
+  minDistance: number,
+  fallbackDirection: Vec2 = vec(0, 1),
+): Vec2 {
+  const safeDistance = Math.max(0, minDistance);
+  const offset = subtract(position, center);
+  const offsetLength = length(offset);
+  if (offsetLength >= safeDistance || safeDistance === 0) return vec(position.x, position.y);
+
+  const fallback = normalize(fallbackDirection);
+  const direction = offsetLength > EPSILON
+    ? scale(offset, 1 / offsetLength)
+    : length(fallback) > EPSILON
+      ? fallback
+      : vec(0, 1);
+  return add(center, scale(direction, safeDistance));
+}

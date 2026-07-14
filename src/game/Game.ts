@@ -8,7 +8,7 @@ import {
   buildVersionTimeline,
   circleIntersectsLine,
   circleIntersectsRing,
-  circlesIntersect,
+  clampOutsideCircle,
   clampToArena,
   distance,
   fromAngle,
@@ -16,6 +16,8 @@ import {
   lerp,
   normalize,
   predictDashCatchTarget,
+  rayIntersectsCircle,
+  resolveBossShotCollision,
   sampleTimeline,
   scale,
   subtract,
@@ -30,7 +32,6 @@ import { ArenaAudio } from '../audio/ArenaAudio';
 import { Hud } from '../ui/Hud';
 import {
   ArenaRenderer,
-  BREAK_RANGE,
   WORLD_ORIGIN,
   WORLD_HEIGHT,
   WORLD_WIDTH,
@@ -58,6 +59,7 @@ interface PlayerState {
 }
 
 interface ShotState extends ShotView {
+  readonly coreAligned: boolean;
   velocity: Vec2;
   lifeMs: number;
 }
@@ -102,7 +104,6 @@ declare global {
 }
 
 const BOSS_POSITION = vec(0, 0);
-const PLAYER_START = vec(0, 220);
 const FIXED_STEP_MS = COMBAT_TUNING.fixedStepMs;
 
 export class Game {
@@ -281,6 +282,7 @@ export class Game {
 
   private updatePlayer(dtMs: number): void {
     const dt = dtMs / 1000;
+    const previousPosition = { ...this.player.position };
     const movement = this.spectator ? this.spectatorMovement() : this.input.movement();
     const playerScreen = {
       x: WORLD_ORIGIN.x + this.player.position.x,
@@ -309,16 +311,6 @@ export class Game {
       this.player.position = add(this.player.position, scale(this.player.velocity, dt));
       this.player.dashRemainingMs = Math.max(0, this.player.dashRemainingMs - dtMs);
       this.player.invulnerableMs = Math.max(this.player.invulnerableMs, this.player.dashRemainingMs + 40);
-      if (this.player.trailCooldownMs <= 0) {
-        this.trails.push({
-          position: { ...this.player.position },
-          angle: this.player.angle,
-          alpha: 1,
-          lifeMs: 210,
-          maxLifeMs: 210,
-        });
-        this.player.trailCooldownMs = 45;
-      }
     } else {
       const desiredVelocity = scale(movement, COMBAT_TUNING.playerMoveSpeed);
       const acceleration = 1 - Math.exp(-22 * dt);
@@ -327,6 +319,22 @@ export class Game {
       this.player.position = add(this.player.position, scale(this.player.velocity, dt));
     }
     this.player.position = clampToArena(this.player.position, ARENA_BOUNDS, COMBAT_TUNING.playerRadius);
+    this.player.position = clampOutsideCircle(
+      this.player.position,
+      BOSS_POSITION,
+      COMBAT_TUNING.bossBodyRadius + COMBAT_TUNING.playerRadius,
+      subtract(previousPosition, BOSS_POSITION),
+    );
+    if (this.player.dashRemainingMs > 0 && this.player.trailCooldownMs <= 0) {
+      this.trails.push({
+        position: { ...this.player.position },
+        angle: this.player.angle,
+        alpha: 1,
+        lifeMs: 210,
+        maxLifeMs: 210,
+      });
+      this.player.trailCooldownMs = 45;
+    }
 
     const spectatorFire = this.spectator && this.bossVulnerable;
     if ((this.input.isShooting() || spectatorFire) && this.player.fireCooldownMs <= 0) {
@@ -349,12 +357,16 @@ export class Game {
   private fireShot(): void {
     const direction = fromAngle(this.player.angle);
     const start = add(this.player.position, scale(direction, 23));
-    const armed = distance(this.player.position, BOSS_POSITION) <= BREAK_RANGE;
+    const armed = distance(this.player.position, BOSS_POSITION) <= COMBAT_TUNING.breakRange;
     this.shots.push({
       position: start,
       previous: start,
       velocity: scale(direction, COMBAT_TUNING.shotSpeed),
       armed,
+      coreAligned: rayIntersectsCircle(start, direction, {
+        center: BOSS_POSITION,
+        radius: COMBAT_TUNING.bossCoreRadius + COMBAT_TUNING.shotRadius,
+      }),
       lifeMs: 900,
     });
     this.player.fireCooldownMs = COMBAT_TUNING.shotIntervalMs;
@@ -369,13 +381,25 @@ export class Game {
       shot.position = add(shot.position, scale(shot.velocity, dt));
       shot.lifeMs -= dtMs;
 
-      const struckBoss = circlesIntersect(
-        { center: shot.position, radius: COMBAT_TUNING.shotRadius },
-        { center: BOSS_POSITION, radius: COMBAT_TUNING.bossRadius },
-      );
-      if (struckBoss) {
-        if (this.bossVulnerable && shot.armed) this.hitBoss();
-        else this.ricochet(shot.position, this.bossVulnerable ? 'ENTER BREAK RANGE' : 'CORE SEALED');
+      const outcome = resolveBossShotCollision({
+        shot: { center: shot.position, radius: COMBAT_TUNING.shotRadius },
+        core: { center: BOSS_POSITION, radius: COMBAT_TUNING.bossCoreRadius },
+        armor: { center: BOSS_POSITION, radius: COMBAT_TUNING.bossBodyRadius },
+        bossVulnerable: this.bossVulnerable,
+        armed: shot.armed,
+        coreAligned: shot.coreAligned,
+      });
+      if (outcome === 'hit') {
+        this.hitBoss();
+        continue;
+      }
+      if (outcome !== 'none') {
+        const message = outcome === 'core-sealed'
+          ? 'CORE SEALED'
+          : outcome === 'enter-break-range'
+            ? 'ENTER BREAK RANGE'
+            : 'CORE MISSED';
+        this.ricochet(shot.position, message);
         continue;
       }
       if (shot.lifeMs > 0) survivors.push(shot);
@@ -719,7 +743,7 @@ export class Game {
     if (sample.phase === 'telegraph' && sample.window.occurrence === 0) return 'DASHED = FORECAST';
     if (sample.phase === 'active' && sample.window.occurrence === 0) return 'SOLID RED = LETHAL // SPACE TO DASH';
     if (sample.phase === 'opening') {
-      return distance(this.player.position, BOSS_POSITION) <= BREAK_RANGE
+      return distance(this.player.position, BOSS_POSITION) <= COMBAT_TUNING.breakRange
         ? 'WHITE CORE // HOLD FIRE'
         : 'BREAK RANGE // COMMIT DASH OR HOLD SAFE';
     }
@@ -734,7 +758,7 @@ export class Game {
 
   private createPlayer(): PlayerState {
     return {
-      position: { ...PLAYER_START },
+      position: { ...COMBAT_TUNING.playerStart },
       velocity: vec(),
       dashDirection: vec(0, -1),
       angle: -Math.PI / 2,
