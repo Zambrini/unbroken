@@ -21,7 +21,7 @@ Exit gate: a new player can identify danger, execute a dash-counter, explain the
 
 ## `0.1.1` — Resilient arena entry
 
-Status: **next checkpoint**
+Status: **shipped 2026-07-14**
 
 Make audio startup best-effort so the player always reaches the countdown immediately after selecting `ENTER ARENA`, even when the browser rejects, omits, or indefinitely suspends its audio context.
 
@@ -34,7 +34,7 @@ Exit gate: every audio fault mode enters playable combat immediately with no unh
 
 ## After `0.1.1` — combat contract checkpoint
 
-Status: **selected only after replay**
+Status: **next director cycle — selected only after replay**
 
 Replay the shipped build and choose one player-visible weakness in movement, dash commitment, aim precision, attack readability, impact, or pacing. Compare the relevant live state with the approved concept when visual execution is the limiting gap. No new systems during this pass.
 

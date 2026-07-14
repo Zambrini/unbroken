@@ -2,6 +2,22 @@
 
 All notable changes are recorded here. The project uses semantic versioning.
 
+## [0.1.1] — 2026-07-14
+
+### Fixed
+
+- Arena entry, re-entry, and mobile spectator start now proceed immediately without waiting for browser audio startup.
+- Missing, throwing, rejected, or indefinitely suspended audio contexts fall back to silent play instead of trapping the challenger on the title screen.
+- Audio failures are contained without unhandled promise rejections or player-facing error UI.
+
+### Verified
+
+- Expanded the automated suite to 21 checks, including five audio startup fault contracts.
+- Passed the rendered desktop matrix for native, absent, rejected, and never-settling audio startup.
+- Passed mobile spectator entry at 390×844 with audio unavailable.
+- Reproduced and cleared the original blocker in the Codex internal browser: entry shows countdown `3` immediately and reaches live combat with no console errors.
+- Preserved normal audio unlock and mute behavior where the browser permits playback.
+
 ## [0.1.0] — 2026-07-13
 
 ### Added

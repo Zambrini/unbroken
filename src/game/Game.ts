@@ -89,7 +89,7 @@ export interface GameSnapshot {
 
 interface DebugApi {
   snapshot: () => GameSnapshot;
-  start: () => Promise<void>;
+  start: () => void;
   damageBoss: (amount?: number) => void;
   setPlayerIntegrity: (integrity: number) => void;
   show: (state: 'entry' | 'pressure' | 'payoff') => void;
@@ -172,8 +172,8 @@ export class Game {
     this.animationFrame = requestAnimationFrame(this.loop);
   }
 
-  async enter(): Promise<void> {
-    await this.audio.start();
+  enter(): void {
+    this.audio.start();
     if (this.mode === 'title' || this.mode === 'payoff') {
       this.dashesThisRun = 0;
       this.attempts = { 1: 0, 37: 0 };
@@ -769,7 +769,7 @@ export class Game {
   private installDebugApi(): void {
     window.__UNBROKEN__ = {
       snapshot: () => this.snapshot(),
-      start: async () => this.enter(),
+      start: () => this.enter(),
       damageBoss: (amount = 1) => {
         this.bossHealth = Math.max(0, this.bossHealth - Math.max(0, amount));
         if (this.bossHealth <= 0 && this.mode === 'fight') this.winRound();

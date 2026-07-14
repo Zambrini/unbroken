@@ -36,16 +36,16 @@
             Enter a live arena. Read the machine. Spend one dash at the right moment. Leave behind the last human victory HEIR could not prevent.
           </p>
           <div class="hero__actions">
-            <a class="primary-action" href="../">Play version 0.1.0</a>
+            <a class="primary-action" href="../">Play version 0.1.1</a>
             <a class="text-action" href="#checkpoint-log">Read the fight record ↓</a>
           </div>
         </div>
 
         <aside class="version-stamp" aria-label="Current build status">
           <p>Current transmission</p>
-          <strong>0.1.0</strong>
+          <strong>0.1.1</strong>
           <dl>
-            <div><dt>State</dt><dd>Preserved</dd></div>
+            <div><dt>State</dt><dd>Shipped</dd></div>
             <div><dt>Camera</dt><dd>Fixed 16:9</dd></div>
             <div><dt>Input</dt><dd>Keyboard + mouse</dd></div>
             <div><dt>Mobile</dt><dd>Spectator only</dd></div>
@@ -62,16 +62,16 @@
         <figure>
           <div class="frame-corners">
             <img
-              src="./assets/checkpoint-0.1.0.png"
-              alt="UNBROKEN version 0.1.0 showing the player facing HEIR V.37 during the DASH CATCH pressure state"
+              src="./assets/checkpoint-0.1.1.png"
+              alt="UNBROKEN version 0.1.1 showing countdown three immediately after entry while audio resume is deliberately held forever"
               width="1440"
               height="900"
             />
           </div>
           <figcaption>
-            <span>HEIR // V.37</span>
-            <span>DASH CATCH pressure state</span>
-            <span>Chromium render // 1440 × 900</span>
+            <span>HEIR // V.01</span>
+            <span>Non-blocking entry contract</span>
+            <span>Audio-fault render // 1440 × 900</span>
           </figcaption>
         </figure>
       </section>
@@ -92,8 +92,9 @@
           </p>
         </article>
         <aside>
-          <p class="proof-grid__label">Verified in 0.1.0</p>
+          <p class="proof-grid__label">Verified in 0.1.1</p>
           <ul>
+            <li>Immediate entry with silent fallback</li>
             <li>Two 45-second rounds</li>
             <li>Movement, aim, fire, dash</li>
             <li>Three-hit integrity</li>
@@ -109,7 +110,7 @@
         <div>
           <h2 id="boundary-title">The fight is real. The global service is not—yet.</h2>
           <p>
-            Version 0.1.0 is a local vertical slice. Its audience, queue, challenger identities, victory record, and between-round evolution are deterministic presentation. There is no live multiplayer, persisted history, account system, trained model, or frame-by-frame AI control in this checkpoint.
+            Version 0.1.1 is a local vertical slice. Its audience, queue, challenger identities, victory record, and between-round evolution are deterministic presentation. There is no live multiplayer, persisted history, account system, trained model, or frame-by-frame AI control in this checkpoint.
           </p>
         </div>
       </section>
@@ -123,6 +124,26 @@
 
         <ol class="transmissions">
           <li class="transmission transmission--current">
+            <div class="transmission__rail" aria-hidden="true"><span></span></div>
+            <div class="transmission__meta">
+              <time datetime="2026-07-14">14 JUL 2026</time>
+              <strong>V 0.1.1</strong>
+              <span>Entry resilient</span>
+            </div>
+            <div class="transmission__body">
+              <h3>The arena starts before audio</h3>
+              <p>
+                Removed browser audio from the critical path to combat. The entry gesture still requests the synth, but missing, rejected, or permanently suspended audio now yields immediate silent play instead of a trapped champion.
+              </p>
+              <ul>
+                <li>Countdown begins in the entry click</li>
+                <li>Four rendered audio modes verified</li>
+                <li>21 automated checks passing</li>
+              </ul>
+            </div>
+          </li>
+
+          <li class="transmission">
             <div class="transmission__rail" aria-hidden="true"><span></span></div>
             <div class="transmission__meta">
               <time datetime="2026-07-14">14 JUL 2026</time>
@@ -182,7 +203,7 @@
       </div>
       <p>One arena. One challenger. One inherited answer.</p>
       <div class="footer-links">
-        <a href="../">Play 0.1.0</a>
+        <a href="../">Play 0.1.1</a>
         <a href="https://github.com/Zambrini/unbroken" target="_blank" rel="noreferrer">View source ↗</a>
       </div>
     </footer>

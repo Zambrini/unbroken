@@ -6,6 +6,33 @@ what remains intentionally outside the build.
 
 The public version is available through the in-game **PROJECT / DEVLOG** link.
 
+## `0.1.1` — The arena starts before audio
+
+- **Shipped:** 2026-07-14
+- **Player impact:** selecting `ENTER ARENA`, `WATCH LIVE`, or a retry starts the countdown immediately, even if the browser cannot start audio.
+
+The first directed checkpoint removed a release-blocking dependency between the
+fight and the browser audio system. UNBROKEN still attempts to unlock its synth
+from the player gesture, but silence is now a valid fallback instead of a stuck
+title screen. Combat, timing, controls, and presentation are otherwise unchanged.
+
+### What was verified
+
+- The original failure target—the Codex internal browser—showed countdown `3`
+  immediately and reached live combat with no console errors.
+- Desktop Chromium passed with native audio, no `AudioContext`, rejected resume,
+  and a resume promise that never settles.
+- Mobile spectator mode entered V.37 countdown and live combat with no audio
+  context at 390×844.
+- Movement, dash, and fire remained responsive during silent fallback play.
+- The suite grew from 16 to 21 passing checks; the production build remained clean.
+
+### Kept out of this checkpoint
+
+The separate music catch-up burst after inactive or backgrounded time remains a
+future audio-cadence issue. It was deliberately excluded so this release answers
+one question only: can the challenger always enter?
+
 ## `0.1.0` — First recoverable fight record
 
 - **Preserved:** 2026-07-14

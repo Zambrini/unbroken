@@ -8,16 +8,35 @@ export class ArenaAudio {
   private nextBeatAt = 0;
   private beat = 0;
 
-  async start(): Promise<void> {
-    if (!this.context) {
-      this.context = new AudioContext();
-      this.master = this.context.createGain();
-      this.master.gain.value = 0.48;
-      this.master.connect(this.context.destination);
-      this.noise = this.createNoiseBuffer(this.context);
+  start(): void {
+    try {
+      if (!this.context) {
+        if (typeof AudioContext === 'undefined') return;
+        const context = new AudioContext();
+        const master = context.createGain();
+        master.gain.value = 0.48;
+        master.connect(context.destination);
+        const noise = this.createNoiseBuffer(context);
+        this.context = context;
+        this.master = master;
+        this.noise = noise;
+      }
+
+      const context = this.context;
+      this.nextBeatAt = context.currentTime;
+      if (context.state === 'suspended') {
+        void context.resume().then(
+          () => {
+            if (this.context === context) this.nextBeatAt = context.currentTime;
+          },
+          () => undefined,
+        );
+      }
+    } catch {
+      this.context = null;
+      this.master = null;
+      this.noise = null;
     }
-    if (this.context.state === 'suspended') await this.context.resume();
-    this.nextBeatAt = this.context.currentTime;
   }
 
   setMuted(muted: boolean): void {

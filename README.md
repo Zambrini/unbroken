@@ -4,9 +4,9 @@ UNBROKEN is a desktop-first 2D boss-arena prototype. You are the current challen
 
 ## Status
 
-- **Version:** `0.1.0` vertical slice
+- **Version:** `0.1.1` vertical slice
 - **Goal:** prove the controls, fixed arena camera, dodge-and-punish combat, `DASH CATCH` pressure state, and victory payoff in one 5–10 minute session.
-- **Next checkpoint:** make arena entry immediate even when browser audio startup is unavailable or never settles, without changing combat.
+- **Next checkpoint:** selected after replaying the shipped build and identifying the highest-leverage player-visible combat weakness.
 
 This build is deliberately local and on rails. The audience, queue, challengers, and post-victory evolution are simulated presentation—not a live multiplayer service or trained AI.
 
@@ -21,7 +21,7 @@ npm run dev
 
 Use Node `22.23.1` (recorded in `.node-version`), then open [http://localhost:5173/unbroken/](http://localhost:5173/unbroken/).
 
-Use the on-screen start button once to initialize audio.
+Use the on-screen start button once. Audio unlock is attempted from that gesture, but unavailable or suspended audio never blocks play.
 
 ### Controls
 
@@ -72,6 +72,6 @@ npm run preview
 - [Companion website](public/project/index.html)
 - Concept screens: [entry](docs/concepts/01-entry-v01.png), [dash counter](docs/concepts/02-dash-counter.png), [DASH CATCH](docs/concepts/03-dash-catch-v37.png)
 
-## Deliberately excluded from `0.1.0`
+## Deliberately excluded from `0.1.1`
 
 Real networking, a global queue, accounts, chat, AI training, server persistence, matchmaking, controller/touch play, broad progression, multiple modes, multiple bosses, inventories, cosmetics, content catalogs, and frame-by-frame AI control.
