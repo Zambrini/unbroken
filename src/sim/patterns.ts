@@ -19,6 +19,20 @@ export const ARENA_BOUNDS: ArenaBounds = {
   maxY: 280,
 };
 
+// Boss-relative outline of the visible octagonal combat floor. Rendering uses
+// this same polygon for the floor, the hazard mask, and its foreground rail so
+// every threat remains visually owned by the arena.
+export const ARENA_FLOOR_POLYGON = [
+  { x: -612, y: -250 },
+  { x: -468, y: -336 },
+  { x: 468, y: -336 },
+  { x: 612, y: -250 },
+  { x: 612, y: 290 },
+  { x: 468, y: 376 },
+  { x: -468, y: 376 },
+  { x: -612, y: 290 },
+] as const satisfies readonly Vec2[];
+
 export const COMBAT_TUNING = {
   fixedStepMs: 1000 / 60,
   playerStart: { x: 330, y: 210 },

@@ -1,5 +1,6 @@
 import { Application, Container, Graphics } from 'pixi.js';
 import {
+  ARENA_FLOOR_POLYGON,
   COMBAT_TUNING,
   fromAngle,
   type PatternSample,
@@ -9,6 +10,10 @@ import {
 export const WORLD_WIDTH = 1600;
 export const WORLD_HEIGHT = 900;
 export const WORLD_ORIGIN: Vec2 = { x: 800, y: 430 };
+const ARENA_FLOOR_SCREEN = ARENA_FLOOR_POLYGON.flatMap(({ x, y }) => [
+  WORLD_ORIGIN.x + x,
+  WORLD_ORIGIN.y + y,
+]);
 const COLORS = {
   void: 0x05070c,
   floor: 0x0a1020,
@@ -72,7 +77,11 @@ export interface RenderFrame {
 export class ArenaRenderer {
   private readonly app = new Application();
   private readonly root = new Container();
-  private readonly graphics = new Graphics();
+  private readonly backgroundGraphics = new Graphics();
+  private readonly hazardLayer = new Container();
+  private readonly hazardGraphics = new Graphics();
+  private readonly hazardMask = new Graphics();
+  private readonly foregroundGraphics = new Graphics();
   private readonly reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   constructor(private readonly mount: HTMLElement) {}
@@ -88,7 +97,10 @@ export class ArenaRenderer {
     });
     this.app.canvas.setAttribute('aria-hidden', 'true');
     this.mount.appendChild(this.app.canvas);
-    this.root.addChild(this.graphics);
+    this.hazardMask.poly(ARENA_FLOOR_SCREEN).fill(COLORS.white);
+    this.hazardLayer.addChild(this.hazardGraphics, this.hazardMask);
+    this.hazardLayer.mask = this.hazardMask;
+    this.root.addChild(this.backgroundGraphics, this.hazardLayer, this.foregroundGraphics);
     this.app.stage.addChild(this.root);
   }
 
@@ -103,20 +115,26 @@ export class ArenaRenderer {
       (this.app.screen.height - WORLD_HEIGHT * scale) / 2 + shakeY,
     );
 
-    const g = this.graphics;
-    g.clear();
-    g.rect(0, 0, WORLD_WIDTH, WORLD_HEIGHT).fill(COLORS.void);
-    this.drawAudience(g, frame);
-    this.drawArena(g, frame);
-    this.drawFixtures(g, frame.nowMs);
-    this.drawBossBackdrop(g);
-    this.drawHazards(g, frame);
-    this.drawTrails(g, frame.trails);
-    this.drawBoss(g, frame);
-    this.drawShots(g, frame.shots);
-    this.drawPlayer(g, frame);
-    this.drawParticles(g, frame.particles);
-    if (frame.pressure) this.drawPressure(g, frame.nowMs);
+    const background = this.backgroundGraphics;
+    const hazards = this.hazardGraphics;
+    const foreground = this.foregroundGraphics;
+    background.clear();
+    hazards.clear();
+    foreground.clear();
+
+    background.rect(0, 0, WORLD_WIDTH, WORLD_HEIGHT).fill(COLORS.void);
+    this.drawAudience(background, frame);
+    this.drawArena(background, frame);
+    this.drawFixtures(background, frame.nowMs);
+    this.drawBossBackdrop(background);
+    this.drawHazards(hazards, frame);
+    this.drawContainmentRail(foreground, frame);
+    this.drawTrails(foreground, frame.trails);
+    this.drawBoss(foreground, frame);
+    this.drawShots(foreground, frame.shots);
+    this.drawPlayer(foreground, frame);
+    this.drawParticles(foreground, frame.particles);
+    if (frame.pressure) this.drawPressure(foreground, frame.nowMs);
   }
 
   destroy(): void {
@@ -142,17 +160,7 @@ export class ArenaRenderer {
   }
 
   private drawArena(g: Graphics, frame: RenderFrame): void {
-    const arena = [
-      188, 180,
-      332, 94,
-      1268, 94,
-      1412, 180,
-      1412, 720,
-      1268, 806,
-      332, 806,
-      188, 720,
-    ];
-    g.poly(arena).fill(COLORS.floor).stroke({ color: COLORS.magenta, alpha: 0.64, width: 3 });
+    g.poly(ARENA_FLOOR_SCREEN).fill(COLORS.floor).stroke({ color: COLORS.magenta, alpha: 0.64, width: 3 });
     g.poly([210, 196, 348, 116, 1252, 116, 1390, 196, 1390, 704, 1252, 784, 348, 784, 210, 704])
       .stroke({ color: COLORS.cyanDim, alpha: 0.28, width: 1 });
 
@@ -174,6 +182,15 @@ export class ArenaRenderer {
     if (frame.bossVulnerable) {
       this.dashedCircle(g, WORLD_ORIGIN.x, WORLD_ORIGIN.y, COMBAT_TUNING.breakRange, 18, 12, COLORS.cyan, 0.25);
     }
+  }
+
+  private drawContainmentRail(g: Graphics, frame: RenderFrame): void {
+    const threatVisible = frame.sample?.phase === 'telegraph' || frame.sample?.phase === 'active';
+    const pulse = threatVisible ? 0.78 + Math.sin(frame.nowMs * 0.012) * 0.08 : 0.64;
+    g.poly(ARENA_FLOOR_SCREEN)
+      .stroke({ color: COLORS.magenta, alpha: threatVisible ? 0.13 : 0.08, width: 10 });
+    g.poly(ARENA_FLOOR_SCREEN)
+      .stroke({ color: COLORS.magenta, alpha: pulse, width: 3 });
   }
 
   private drawFixtures(g: Graphics, nowMs: number): void {

@@ -6,6 +6,51 @@ what remains intentionally outside the build.
 
 The public version is available through the in-game **PROJECT / DEVLOG** link.
 
+## `0.4.0` — Threat Containment
+
+- **Shipped:** 2026-07-14
+- **Player impact:** HEIR's forecasts and lethal geometry now feel emitted into the arena rather than drawn across the screen, while every reachable threat remains honestly signaled.
+
+Replaying `0.3.0` against the approved V.37 pressure concept exposed one clear
+visual break: long lance and `DASH CATCH` lines continued through the octagonal
+wall into the audience and event UI. The attacks were fair, but the rendering
+made them feel like overlays. This checkpoint contains the existing threat
+grammar without changing the fight beneath it.
+
+### What changed in the fight
+
+- The visible floor, hazard mask, and foreground containment rail now share one
+  octagonal polygon, eliminating drift between the arena and its effects.
+- Pulse, lance, compression, and `DASH CATCH` forecasts and active danger render
+  through their own masked layer and stop cleanly at the wall.
+- A restrained foreground rail keeps the boundary crisp above red bloom without
+  competing with the cyan challenger, white core, or safe pocket.
+- Attack order, timing, damage, collision, safe answers, camera, controls, HUD,
+  and actor rendering stay fixed.
+
+### What was verified
+
+- Rendered captures cover all four pattern families: pulse and lance forecasts,
+  active pulse, lance and compression danger, and both `DASH CATCH` warning and
+  pressure states.
+- Two new contracts keep the authored attack signatures fixed and prove that
+  every reachable player circle remains inside the visible hazard mask. All 28
+  automated checks pass, and the production build passes on Node 22.23.1.
+- A real-input V.01 → V.37 run reached `LAST CONQUEROR`; V.37 fell in 11.83
+  seconds across two total attempts and two dash commits. Debug support restored
+  only challenger integrity and never damaged or advanced HEIR.
+- The 390×844 mobile spectator holds a 390-pixel scroll width. Desktop and
+  mobile produced zero console errors, and reload produced zero failed or
+  status-400+ requests.
+- A 180-frame V.37 pressure sample measured 8.329ms mean, 9.1ms p95, and 9.4ms
+  maximum frame interval.
+
+### Kept out of this checkpoint
+
+No attack, timing, damage, progression, networking, queue service, AI training,
+account, mode, boss, or content expansion was added. The next checkpoint begins
+only after replaying this shipped build.
+
 ## `0.3.0` — Actor Authority
 
 - **Shipped:** 2026-07-14

@@ -70,7 +70,32 @@ Exit gate: V.01 and V.37 carry materially more visual mass, the core's sealed
 and open states remain instantly readable, the physical exclusion matches the
 new hull, and the complete fight remains performant and winnable by real input.
 
-## After `0.3.0` — next director cycle
+## `0.4.0` — Threat Containment
+
+Status: **shipped 2026-07-14**
+
+After Actor Authority, the V.37 concept comparison exposed one remaining break
+in the arena fiction: long forecasts and lethal bloom crossed the octagonal
+wall into the audience and event UI. This checkpoint makes every existing
+threat feel emitted into the arena without changing how the fight behaves.
+
+- Use one shared octagonal polygon for the visible floor, hazard mask, and
+  foreground containment rail.
+- Keep pulse, lance, compression, and `DASH CATCH` forecast and active effects
+  inside that visible combat floor.
+- Preserve every reachable challenger position inside the mask so no live
+  collision region loses its signal.
+- Preserve attack order, timing, damage, collision, safe answers, camera,
+  controls, HUD, and actor rendering.
+- Cover every pattern family with rendered containment evidence, then complete
+  the full fight by real input.
+
+Exit gate: no queued or active hazard leaks into the audience or scoreboard;
+every reachable hitbox remains visibly signaled; the `DASH CATCH` safe pocket
+stays readable; and the unchanged two-round fight remains performant and
+winnable.
+
+## After `0.4.0` — next director cycle
 
 Status: **unshipped — selected only after replay**
 

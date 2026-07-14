@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   ARENA_BOUNDS,
+  ARENA_FLOOR_POLYGON,
   COMBAT_TUNING,
   PATTERNS,
   V01_PATTERNS,
@@ -61,6 +62,66 @@ describe('authored version scripts', () => {
     expect(sampleTimeline(timeline, first.telegraphEndMs)?.phase).toBe('active');
     expect(sampleTimeline(timeline, first.activeEndMs)?.phase).toBe('opening');
     expect(sampleTimeline(timeline, first.openingEndMs)?.phase).toBe('recovery');
+  });
+
+  it('keeps visual containment separate from the authored attack contract', () => {
+    const signature = (patterns: typeof V01_PATTERNS | typeof V37_PATTERNS) => patterns.map((pattern) => ({
+      kind: pattern.kind,
+      telegraphMs: pattern.telegraphMs,
+      activeMs: pattern.activeMs,
+      openingMs: pattern.openingMs,
+      recoveryMs: pattern.recoveryMs,
+      damage: pattern.damage,
+    }));
+
+    expect(V01_SCRIPT.sequence).toEqual(['v01-pulse', 'v01-lances', 'v01-compression']);
+    expect(V37_SCRIPT.sequence).toEqual([
+      'v37-pulse',
+      'v37-lances',
+      'v37-dash-catch',
+      'v37-compression',
+      'v37-dash-catch',
+    ]);
+    expect(signature(V01_PATTERNS)).toEqual([
+      { kind: 'pulse', telegraphMs: 780, activeMs: 900, openingMs: 1_100, recoveryMs: 250, damage: 1 },
+      { kind: 'lances', telegraphMs: 850, activeMs: 320, openingMs: 1_150, recoveryMs: 250, damage: 1 },
+      { kind: 'compression', telegraphMs: 950, activeMs: 1_000, openingMs: 1_250, recoveryMs: 250, damage: 1 },
+    ]);
+    expect(signature(V37_PATTERNS)).toEqual([
+      { kind: 'pulse', telegraphMs: 780, activeMs: 900, openingMs: 1_100, recoveryMs: 250, damage: 1 },
+      { kind: 'lances', telegraphMs: 850, activeMs: 320, openingMs: 1_150, recoveryMs: 250, damage: 1 },
+      { kind: 'compression', telegraphMs: 950, activeMs: 1_000, openingMs: 1_250, recoveryMs: 250, damage: 1 },
+      { kind: 'dashCatch', telegraphMs: 720, activeMs: 900, openingMs: 1_150, recoveryMs: 250, damage: 1 },
+    ]);
+  });
+
+  it('keeps every reachable player circle inside the visible hazard mask', () => {
+    const radius = COMBAT_TUNING.playerRadius;
+    const reachableCorners = [
+      vec(ARENA_BOUNDS.minX + radius, ARENA_BOUNDS.minY + radius),
+      vec(ARENA_BOUNDS.maxX - radius, ARENA_BOUNDS.minY + radius),
+      vec(ARENA_BOUNDS.maxX - radius, ARENA_BOUNDS.maxY - radius),
+      vec(ARENA_BOUNDS.minX + radius, ARENA_BOUNDS.maxY - radius),
+    ];
+    const cross = (edge: ReturnType<typeof vec>, offset: ReturnType<typeof vec>) => edge.x * offset.y - edge.y * offset.x;
+    let minimumClearance = Number.POSITIVE_INFINITY;
+
+    for (const point of reachableCorners) {
+      for (let index = 0; index < ARENA_FLOOR_POLYGON.length; index += 1) {
+        const start = ARENA_FLOOR_POLYGON[index];
+        const end = ARENA_FLOOR_POLYGON[(index + 1) % ARENA_FLOOR_POLYGON.length];
+        if (!start || !end) continue;
+        const edge = vec(end.x - start.x, end.y - start.y);
+        const centerSide = Math.sign(cross(edge, vec(-start.x, -start.y)));
+        const pointSide = cross(edge, vec(point.x - start.x, point.y - start.y));
+        minimumClearance = Math.min(
+          minimumClearance,
+          (pointSide * centerSide) / Math.hypot(edge.x, edge.y),
+        );
+      }
+    }
+
+    expect(minimumClearance).toBeGreaterThanOrEqual(radius);
   });
 });
 

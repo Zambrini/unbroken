@@ -2,6 +2,24 @@
 
 All notable changes are recorded here. The project uses semantic versioning.
 
+## [0.4.0] — 2026-07-14
+
+### Changed
+
+- Added one shared octagonal arena polygon for the visible floor, hazard mask, and foreground containment rail.
+- Routed pulse, lance, compression, and `DASH CATCH` forecast and active effects through a dedicated masked hazard layer, so long geometry now stops at the arena wall instead of crossing into the audience or event UI.
+- Kept the perimeter rail above hazard bloom so the combat boundary remains crisp under pressure.
+- Preserved attack order, timing, damage, collision, safe answers, camera, controls, HUD, and actor rendering.
+
+### Verified
+
+- Expanded the automated suite from 26 to 28 passing checks, including fixed authored-attack signatures and proof that every reachable player circle remains inside the visible hazard mask.
+- Inspected rendered containment across all four pattern families, including pulse and lance telegraphs, active pulse, lance and compression danger, and `DASH CATCH` telegraph and pressure states.
+- Completed a real-input V.01 → V.37 run through the payoff; V.37 fell in 11.83 seconds across two total attempts and two dash commits. Debug support restored only challenger integrity and never damaged or advanced HEIR.
+- Confirmed the 390×844 mobile spectator at a 390-pixel scroll width, with zero desktop or mobile console errors and zero failed or status-400+ requests during reload.
+- Sampled 180 V.37 pressure frames at 8.329ms mean, 9.1ms p95, and 9.4ms maximum render interval.
+- Passed the production build on Node 22.23.1.
+
 ## [0.3.0] — 2026-07-14
 
 ### Changed
