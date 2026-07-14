@@ -1,4 +1,4 @@
-import { Application, Container, Graphics } from 'pixi.js';
+import { Application, Assets, Container, Graphics, Sprite, type Texture } from 'pixi.js';
 import {
   ARENA_FLOOR_POLYGON,
   COMBAT_TUNING,
@@ -6,6 +6,11 @@ import {
   type PatternSample,
   type Vec2,
 } from '../sim';
+import {
+  ACTOR_ASSET_URLS,
+  selectHeirActorAsset,
+  type HeirActorAssetKey,
+} from './ActorAssets';
 
 export const WORLD_WIDTH = 1600;
 export const WORLD_HEIGHT = 900;
@@ -44,6 +49,13 @@ const ARENA_BEVEL_OUTER = [
   322, 820,
   170, 730,
 ];
+const CHALLENGER_DISPLAY_SIZE = 64;
+const HEIR_V01_DISPLAY_SIZE = 320;
+// V.37's Blender sprite reserves its outer pixels for thin, non-solid rails.
+// At 336 world units the inherited opaque petal rig remains inside the 132
+// body radius while the energy mutation reaches about 148 of its allowed 158.
+const HEIR_V37_DISPLAY_SIZE = 336;
+const DASH_GHOST_POOL_SIZE = 8;
 const COLORS = {
   void: 0x05070c,
   shellVoid: 0x070a11,
@@ -150,7 +162,17 @@ export class ArenaRenderer {
   private readonly hazardGraphics = new Graphics();
   private readonly hazardMask = new Graphics();
   private readonly staticRailGraphics = new Graphics();
+  private readonly foregroundUnderGraphics = new Graphics();
+  private readonly dashGhostLayer = new Container();
+  private readonly bossLayer = new Container();
+  private readonly foregroundMiddleGraphics = new Graphics();
+  private readonly challengerLayer = new Container();
   private readonly foregroundGraphics = new Graphics();
+  private challengerSprite!: Sprite;
+  private heirSprites!: Record<HeirActorAssetKey, Sprite>;
+  private heirSpriteList!: readonly Sprite[];
+  private bossHitSprite!: Sprite;
+  private readonly dashGhostSprites: Sprite[] = [];
   private readonly reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
     || new URLSearchParams(window.location.search).get('motion') === 'reduce';
 
@@ -167,6 +189,26 @@ export class ArenaRenderer {
     });
     this.app.canvas.setAttribute('aria-hidden', 'true');
     this.mount.appendChild(this.app.canvas);
+    const [
+      challengerTexture,
+      heirV01SealedTexture,
+      heirV01OpenTexture,
+      heirV37SealedTexture,
+      heirV37OpenTexture,
+    ] = await Promise.all([
+      Assets.load<Texture>(ACTOR_ASSET_URLS.challenger),
+      Assets.load<Texture>(ACTOR_ASSET_URLS.heirV01Sealed),
+      Assets.load<Texture>(ACTOR_ASSET_URLS.heirV01Open),
+      Assets.load<Texture>(ACTOR_ASSET_URLS.heirV37Sealed),
+      Assets.load<Texture>(ACTOR_ASSET_URLS.heirV37Open),
+    ]);
+    this.createActorSprites({
+      challenger: challengerTexture,
+      heirV01Sealed: heirV01SealedTexture,
+      heirV01Open: heirV01OpenTexture,
+      heirV37Sealed: heirV37SealedTexture,
+      heirV37Open: heirV37OpenTexture,
+    });
     this.hazardMask.poly(ARENA_FLOOR_SCREEN).fill(COLORS.white);
     this.hazardLayer.addChild(this.hazardGraphics, this.hazardMask);
     this.hazardLayer.mask = this.hazardMask;
@@ -175,6 +217,11 @@ export class ArenaRenderer {
       this.ambientGraphics,
       this.hazardLayer,
       this.staticRailGraphics,
+      this.foregroundUnderGraphics,
+      this.dashGhostLayer,
+      this.bossLayer,
+      this.foregroundMiddleGraphics,
+      this.challengerLayer,
       this.foregroundGraphics,
     );
     this.app.stage.addChild(this.root);
@@ -201,20 +248,26 @@ export class ArenaRenderer {
 
     const ambient = this.ambientGraphics;
     const hazards = this.hazardGraphics;
+    const foregroundUnder = this.foregroundUnderGraphics;
+    const foregroundMiddle = this.foregroundMiddleGraphics;
     const foreground = this.foregroundGraphics;
     ambient.clear();
     hazards.clear();
+    foregroundUnder.clear();
+    foregroundMiddle.clear();
     foreground.clear();
 
     this.drawAudienceLights(ambient, frame);
     this.drawArenaSignals(ambient, frame);
     this.drawFixtureLights(ambient, frame.nowMs);
     this.drawHazards(hazards, frame);
-    this.drawContainmentRail(foreground, frame);
-    this.drawTrails(foreground, frame.trails);
-    this.drawBoss(foreground, frame);
-    this.drawShots(foreground, frame.shots);
-    this.drawPlayer(foreground, frame);
+    this.drawContainmentRail(foregroundUnder, frame);
+    this.drawBossRails(foregroundUnder, frame);
+    this.drawTrailEffects(foregroundUnder, frame.trails);
+    this.updateActorSprites(frame);
+    this.drawBossEffects(foregroundMiddle, frame);
+    this.drawShots(foregroundMiddle, frame.shots);
+    this.drawPlayerEffects(foreground, frame);
     this.drawParticles(foreground, frame.particles);
     if (frame.pressure) this.drawPressure(foreground, frame.nowMs);
   }
@@ -615,100 +668,119 @@ export class ArenaRenderer {
     }
   }
 
-  private drawBoss(g: Graphics, frame: RenderFrame): void {
-    const openOffset = frame.bossVulnerable ? 4 : 0;
+  private createActorSprites(textures: {
+    challenger: Texture;
+    heirV01Sealed: Texture;
+    heirV01Open: Texture;
+    heirV37Sealed: Texture;
+    heirV37Open: Texture;
+  }): void {
+    this.challengerSprite = this.createActorSprite(textures.challenger, CHALLENGER_DISPLAY_SIZE);
+    this.heirSprites = {
+      heirV01Sealed: this.createActorSprite(textures.heirV01Sealed, HEIR_V01_DISPLAY_SIZE),
+      heirV01Open: this.createActorSprite(textures.heirV01Open, HEIR_V01_DISPLAY_SIZE),
+      heirV37Sealed: this.createActorSprite(textures.heirV37Sealed, HEIR_V37_DISPLAY_SIZE),
+      heirV37Open: this.createActorSprite(textures.heirV37Open, HEIR_V37_DISPLAY_SIZE),
+    };
+    this.heirSpriteList = Object.values(this.heirSprites);
+
+    this.heirSpriteList.forEach((sprite) => {
+      sprite.position.set(WORLD_ORIGIN.x, WORLD_ORIGIN.y);
+      sprite.visible = false;
+      this.bossLayer.addChild(sprite);
+    });
+    this.bossHitSprite = this.createActorSprite(textures.heirV01Sealed, HEIR_V01_DISPLAY_SIZE);
+    this.bossHitSprite.position.set(WORLD_ORIGIN.x, WORLD_ORIGIN.y);
+    this.bossHitSprite.blendMode = 'add';
+    this.bossHitSprite.visible = false;
+    this.bossLayer.addChild(this.bossHitSprite);
+
+    for (let index = 0; index < DASH_GHOST_POOL_SIZE; index += 1) {
+      const ghost = this.createActorSprite(textures.challenger, CHALLENGER_DISPLAY_SIZE);
+      ghost.tint = COLORS.cyan;
+      ghost.blendMode = 'add';
+      ghost.visible = false;
+      this.dashGhostSprites.push(ghost);
+      this.dashGhostLayer.addChild(ghost);
+    }
+    this.challengerLayer.addChild(this.challengerSprite);
+  }
+
+  private createActorSprite(texture: Texture, displaySize: number): Sprite {
+    const sprite = new Sprite(texture);
+    sprite.anchor.set(0.5);
+    sprite.width = displaySize;
+    sprite.height = displaySize;
+    sprite.eventMode = 'none';
+    return sprite;
+  }
+
+  private updateActorSprites(frame: RenderFrame): void {
+    const motionNowMs = this.reducedMotion ? 0 : frame.nowMs;
+    const rotation = motionNowMs * (frame.pressure ? 0.00042 : 0.00023);
+    this.heirSpriteList.forEach((sprite) => {
+      sprite.visible = false;
+      sprite.rotation = rotation;
+    });
+    const activeBossSprite = this.heirSprites[
+      selectHeirActorAsset(frame.version, frame.bossVulnerable)
+    ];
+    activeBossSprite.visible = true;
+    const hit = Math.min(1, frame.bossFlash / 75);
+    const activeBossDisplaySize = frame.version === 37 ? HEIR_V37_DISPLAY_SIZE : HEIR_V01_DISPLAY_SIZE;
+    this.bossHitSprite.texture = activeBossSprite.texture;
+    this.bossHitSprite.width = activeBossDisplaySize;
+    this.bossHitSprite.height = activeBossDisplaySize;
+    this.bossHitSprite.rotation = rotation;
+    this.bossHitSprite.alpha = hit * 0.72;
+    this.bossHitSprite.visible = hit > 0;
+
+    const trailCount = Math.min(frame.trails.length, this.dashGhostSprites.length);
+    const firstTrailIndex = frame.trails.length - trailCount;
+    this.dashGhostSprites.forEach((ghost, index) => {
+      const trail = index < trailCount ? frame.trails[firstTrailIndex + index] : undefined;
+      ghost.visible = trail !== undefined;
+      if (!trail) return;
+      const position = this.toScreen(trail.position);
+      ghost.position.set(position.x, position.y);
+      ghost.rotation = trail.angle;
+      ghost.alpha = trail.alpha * 0.34;
+    });
+
+    const playerPosition = this.toScreen(frame.playerPosition);
+    this.challengerSprite.position.set(playerPosition.x, playerPosition.y);
+    this.challengerSprite.rotation = frame.playerAngle;
+    const challengerDisplaySize = frame.playerDashing ? 74 : CHALLENGER_DISPLAY_SIZE;
+    this.challengerSprite.width = challengerDisplaySize;
+    this.challengerSprite.height = challengerDisplaySize;
+    this.challengerSprite.alpha = frame.playerInvulnerable && !frame.playerDashing
+      ? this.reducedMotion ? 0.68 : 0.5 + (Math.sin(frame.nowMs * 0.05) + 1) * 0.22
+      : 1;
+  }
+
+  private drawBossRails(g: Graphics, frame: RenderFrame): void {
+    if (frame.version !== 37) return;
+    const motionNowMs = this.reducedMotion ? 0 : frame.nowMs;
+    const rotation = motionNowMs * (frame.pressure ? 0.00042 : 0.00023);
+    for (let index = 0; index < 6; index += 1) {
+      const angle = rotation * 0.42 + index * (Math.PI / 3);
+      const railFrom = fromAngle(angle, 102);
+      const railTo = fromAngle(angle, 158);
+      this.bloomLine(
+        g,
+        { x: WORLD_ORIGIN.x + railFrom.x, y: WORLD_ORIGIN.y + railFrom.y },
+        { x: WORLD_ORIGIN.x + railTo.x, y: WORLD_ORIGIN.y + railTo.y },
+        COLORS.magenta,
+        2,
+        0.38,
+      );
+    }
+  }
+
+  private drawBossEffects(g: Graphics, frame: RenderFrame): void {
     const motionNowMs = this.reducedMotion ? 0 : frame.nowMs;
     const rotation = motionNowMs * (frame.pressure ? 0.00042 : 0.00023);
     const hit = Math.min(1, frame.bossFlash / 75);
-    const plateDistance = 67 + openOffset + hit * 3;
-
-    if (frame.version === 37) {
-      // The inherited rig stays physically secondary: solid emitters remain
-      // inside the body while their thin energy rails carry the larger outline.
-      for (let index = 0; index < 6; index += 1) {
-        const angle = rotation * 0.42 + index * (Math.PI / 3);
-        const railFrom = fromAngle(angle, 102);
-        const railTo = fromAngle(angle, 158);
-        this.bloomLine(
-          g,
-          { x: WORLD_ORIGIN.x + railFrom.x, y: WORLD_ORIGIN.y + railFrom.y },
-          { x: WORLD_ORIGIN.x + railTo.x, y: WORLD_ORIGIN.y + railTo.y },
-          COLORS.magenta,
-          2,
-          0.38,
-        );
-        const center = {
-          x: WORLD_ORIGIN.x + Math.cos(angle) * 90,
-          y: WORLD_ORIGIN.y + Math.sin(angle) * 90,
-        };
-        const shadowCenter = { x: center.x + 4, y: center.y + 5 };
-        g.poly(this.orientedWedge(shadowCenter, angle, 28, 18))
-          .fill({ color: COLORS.armorShadow, alpha: 0.9 });
-        g.poly(this.orientedWedge(center, angle, 28, 18))
-          .fill(COLORS.armor).stroke({ color: COLORS.magenta, alpha: 0.78, width: 2 });
-        g.poly(this.orientedWedge(center, angle, 20, 9))
-          .fill(COLORS.armorFace).stroke({ color: COLORS.magenta, alpha: 0.42, width: 1 });
-      }
-      [0, Math.PI].forEach((angle) => {
-        const direction = fromAngle(angle, 91);
-        const center = { x: WORLD_ORIGIN.x + direction.x, y: WORLD_ORIGIN.y + direction.y };
-        const points = this.orientedPetal(center, angle, 54, 26);
-        g.poly(points).fill(COLORS.armorHigh).stroke({ color: COLORS.red, alpha: 0.8, width: 2 });
-        const emitter = fromAngle(angle, 20);
-        g.circle(center.x + emitter.x, center.y + emitter.y, 8)
-          .fill(COLORS.armorShadow).stroke({ color: COLORS.red, alpha: 0.86, width: 2 });
-        g.circle(center.x + emitter.x, center.y + emitter.y, 4).fill(COLORS.red);
-      });
-    }
-
-    g.circle(WORLD_ORIGIN.x, WORLD_ORIGIN.y, 77)
-      .fill(COLORS.armorShadow).stroke({ color: COLORS.magenta, alpha: 0.4, width: 2 });
-    g.poly(this.diamond(WORLD_ORIGIN.x, WORLD_ORIGIN.y, 82))
-      .fill(COLORS.armor).stroke({ color: COLORS.magenta, alpha: 0.5, width: 2 });
-
-    for (let index = 0; index < 4; index += 1) {
-      const angle = rotation + index * (Math.PI / 2);
-      const inner = fromAngle(angle, 35);
-      const outer = fromAngle(angle, 79);
-      g.moveTo(WORLD_ORIGIN.x + inner.x, WORLD_ORIGIN.y + inner.y)
-        .lineTo(WORLD_ORIGIN.x + outer.x, WORLD_ORIGIN.y + outer.y)
-        .stroke({ color: COLORS.armorShadow, alpha: 1, width: 20 });
-      g.moveTo(WORLD_ORIGIN.x + inner.x, WORLD_ORIGIN.y + inner.y)
-        .lineTo(WORLD_ORIGIN.x + outer.x, WORLD_ORIGIN.y + outer.y)
-        .stroke({ color: COLORS.armorHigh, alpha: 1, width: 11 });
-      const center = {
-        x: WORLD_ORIGIN.x + Math.cos(angle) * plateDistance,
-        y: WORLD_ORIGIN.y + Math.sin(angle) * plateDistance,
-      };
-      const shadowCenter = { x: center.x + 5, y: center.y + 6 };
-      g.poly(this.orientedPetal(shadowCenter, angle, 88, 44))
-        .fill({ color: COLORS.armorShadow, alpha: 0.96 });
-      g.poly(this.orientedPetal(center, angle, 88, 44))
-        .fill(COLORS.armor).stroke({ color: COLORS.magenta, alpha: 0.92, width: 3 });
-      const faceOffset = fromAngle(angle, 4);
-      const faceCenter = { x: center.x + faceOffset.x, y: center.y + faceOffset.y };
-      g.poly(this.orientedPetal(faceCenter, angle, 62, 27))
-        .fill(hit > 0 ? COLORS.white : COLORS.armorFace)
-        .stroke({ color: hit > 0 ? COLORS.cyan : COLORS.armorHigh, alpha: 0.92, width: 2 });
-      const seamStart = {
-        x: center.x - Math.cos(angle) * 20,
-        y: center.y - Math.sin(angle) * 20,
-      };
-      const seamEnd = {
-        x: center.x + Math.cos(angle) * 31,
-        y: center.y + Math.sin(angle) * 31,
-      };
-      g.moveTo(seamStart.x, seamStart.y).lineTo(seamEnd.x, seamEnd.y)
-        .stroke({ color: COLORS.magenta, alpha: 0.92, width: 2 });
-      const bolt = fromAngle(angle, -18);
-      g.circle(center.x + bolt.x, center.y + bolt.y, 3)
-        .fill(COLORS.white).stroke({ color: COLORS.magenta, alpha: 0.7, width: 1 });
-    }
-
-    g.poly(this.diamond(WORLD_ORIGIN.x, WORLD_ORIGIN.y, 60))
-      .fill(COLORS.armorShadow).stroke({ color: COLORS.magenta, alpha: 0.82, width: 3 });
-    g.poly(this.diamond(WORLD_ORIGIN.x, WORLD_ORIGIN.y, 49))
-      .fill(COLORS.armorHigh).stroke({ color: COLORS.armorFace, alpha: 0.9, width: 2 });
     const coreSize = frame.bossVulnerable
       ? 20 + (this.reducedMotion ? 0 : Math.sin(frame.nowMs * 0.018) * 3)
       : 13;
@@ -753,12 +825,9 @@ export class ArenaRenderer {
     ).fill({ color: COLORS.shellVoid, alpha: 0.58 });
   }
 
-  private drawPlayer(g: Graphics, frame: RenderFrame): void {
+  private drawPlayerEffects(g: Graphics, frame: RenderFrame): void {
     const position = this.toScreen(frame.playerPosition);
     const size = frame.playerDashing ? 29 : 25;
-    const alpha = frame.playerInvulnerable && !frame.playerDashing
-      ? this.reducedMotion ? 0.68 : 0.5 + (Math.sin(frame.nowMs * 0.05) + 1) * 0.22
-      : 1;
     const aimStart = fromAngle(frame.playerAngle, size * 0.72);
     const aimEnd = fromAngle(frame.playerAngle, 58);
     g.moveTo(position.x + aimStart.x, position.y + aimStart.y)
@@ -777,25 +846,9 @@ export class ArenaRenderer {
       );
       g.circle(position.x, position.y, 37).stroke({ color: COLORS.cyan, alpha: 0.46, width: 3 });
     }
-    const shadowPosition = { x: position.x + 4, y: position.y + 5 };
-    g.poly(this.shipPoints(shadowPosition, frame.playerAngle, size + 2))
-      .fill({ color: COLORS.void, alpha: 0.86 });
-    g.poly(this.shipPoints(position, frame.playerAngle, size))
-      .fill({ color: COLORS.armorShadow, alpha }).stroke({ color: COLORS.cyan, alpha, width: 4 });
-    g.poly(this.shipPoints(position, frame.playerAngle, size * 0.72))
-      .fill({ color: COLORS.white, alpha }).stroke({ color: COLORS.armorFace, alpha, width: 1 });
-    const centerBack = fromAngle(frame.playerAngle + Math.PI, size * 0.42);
-    const engineSide = fromAngle(frame.playerAngle + Math.PI / 2, 5);
-    [-1, 1].forEach((side) => {
-      g.circle(
-        position.x + centerBack.x + engineSide.x * side,
-        position.y + centerBack.y + engineSide.y * side,
-        3.5,
-      ).fill({ color: COLORS.cyan, alpha: 0.94 });
-    });
   }
 
-  private drawTrails(g: Graphics, trails: readonly TrailView[]): void {
+  private drawTrailEffects(g: Graphics, trails: readonly TrailView[]): void {
     trails.forEach((trail) => {
       const position = this.toScreen(trail.position);
       const rear = fromAngle(trail.angle + Math.PI, 7);
@@ -808,11 +861,6 @@ export class ArenaRenderer {
         3,
         trail.alpha * 0.48,
       );
-      g.poly(this.shipPoints(position, trail.angle, 24))
-        .fill({ color: COLORS.cyan, alpha: trail.alpha * 0.1 })
-        .stroke({ color: COLORS.cyan, alpha: trail.alpha * 0.58, width: 3 });
-      g.poly(this.shipPoints(position, trail.angle, 17))
-        .fill({ color: COLORS.white, alpha: trail.alpha * 0.08 });
     });
   }
 
@@ -892,43 +940,6 @@ export class ArenaRenderer {
 
   private diamond(x: number, y: number, radius: number): number[] {
     return [x, y - radius, x + radius, y, x, y + radius, x - radius, y];
-  }
-
-  private shipPoints(center: Vec2, angle: number, size: number): number[] {
-    const nose = fromAngle(angle, size);
-    const left = fromAngle(angle + 2.38, size * 0.78);
-    const notch = fromAngle(angle + Math.PI, size * 0.34);
-    const right = fromAngle(angle - 2.38, size * 0.78);
-    return [
-      center.x + nose.x, center.y + nose.y,
-      center.x + left.x, center.y + left.y,
-      center.x + notch.x, center.y + notch.y,
-      center.x + right.x, center.y + right.y,
-    ];
-  }
-
-  private orientedPetal(center: Vec2, angle: number, length: number, width: number): number[] {
-    const forward = fromAngle(angle, length * 0.52);
-    const back = fromAngle(angle + Math.PI, length * 0.48);
-    const side = fromAngle(angle + Math.PI / 2, width);
-    return [
-      center.x + forward.x, center.y + forward.y,
-      center.x + side.x * 0.7, center.y + side.y * 0.7,
-      center.x + back.x + side.x, center.y + back.y + side.y,
-      center.x + back.x - side.x, center.y + back.y - side.y,
-      center.x - side.x * 0.7, center.y - side.y * 0.7,
-    ];
-  }
-
-  private orientedWedge(center: Vec2, angle: number, length: number, width: number): number[] {
-    const tip = fromAngle(angle, length);
-    const rear = fromAngle(angle + Math.PI, length * 0.72);
-    const side = fromAngle(angle + Math.PI / 2, width);
-    return [
-      center.x + tip.x, center.y + tip.y,
-      center.x + rear.x + side.x, center.y + rear.y + side.y,
-      center.x + rear.x - side.x, center.y + rear.y - side.y,
-    ];
   }
 
   private dashedCircle(

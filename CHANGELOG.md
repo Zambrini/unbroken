@@ -2,6 +2,28 @@
 
 All notable changes are recorded here. The project uses semantic versioning.
 
+## [0.6.0] — 2026-07-14
+
+### Changed
+
+- Replaced the procedural challenger and HEIR hulls with five deterministic Blender-rendered sprites: challenger, V.01 sealed/open, and V.37 sealed/open.
+- Added the reproducible source scene at `art/blender/unbroken-combatants.blend` and the deterministic `render-combatants.py` export path.
+- Integrated the renders as persistent Pixi sprites while keeping Blender entirely offline; the browser still runs the same fixed-camera 2D game with no runtime 3D.
+- Preserved the procedural core, aim line, shots, dash streak and ghosts, particles, hit punch, forecasts, danger, safe route, and V.37 energy rails above and around the new physical hulls.
+- Kept the validated actor footprint honest with a 320-unit V.01 display and 336-unit V.37 display whose additional outer reach is energy-only.
+
+### Verified locally
+
+- Passed all 35 automated checks, TypeScript, the production build, and diff validation.
+- Inspected rendered V.01 entry, real-input dash, exposed-core hit, V.37 pressure, reduced-motion, mobile spectator, and reproducible Blender-source states.
+- Confirmed a real dash uses the forged challenger and its persistent ghosts, and observed a live V.37 `CORE HIT` through the open armor.
+- Completed V.01 → inheritance → V.37 → `LAST CONQUEROR` in the production preview; V.37 fell in 35.63 seconds and all 60 boss hits came through real pointer/Space input while the QA harness restored only challenger integrity.
+- Confirmed the 390×844 mobile spectator remains exactly 390 pixels wide and reports no horizontal overflow.
+- Confirmed reduced motion is active and removes nonessential actor rotation while retaining combat-significant feedback.
+- Sampled 180 V.37 pressure frames at 6.943ms mean, 6.9ms cadence, 7.5ms p95, 7.9ms maximum, and zero missed frames.
+- Kept the five runtime PNGs below 0.9MiB combined and made no gameplay or simulation changes.
+- Completed the checkpoint locally. Public deployment and public-build verification remain pending.
+
 ## [0.5.0] — 2026-07-14
 
 ### Changed

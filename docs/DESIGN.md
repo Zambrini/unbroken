@@ -21,7 +21,7 @@ In 5–10 minutes, the player should:
 - Fixed straight top-down, 16:9 camera; the whole octagonal arena remains visible.
 - Matte black-blue floor, sparse cyan grid geometry, magenta perimeter energy, and audience light blocks.
 - Cyan = player action; dashed magenta = queued danger; solid red = active lethal space; white = exposed core/critical impact.
-- Player is a small white wedge with cyan trim. HEIR is a dark modular polygon with magenta seams, red emitters, and a white central core.
+- Player is a narrow white lance/delta craft with charcoal structure, cyan channels, and twin engines. HEIR is a beveled modular machine with magenta seams, restrained red emitters, and a white central core.
 - Effects stay geometric, brief, and subordinate to the actors and safe route.
 - Four recurring fixtures keep the arena authored without adding gameplay clutter: cyan relay upper-left, magenta prism upper-right, red maintenance pod lower-right, camera masts lower-left.
 
@@ -31,7 +31,25 @@ Concept references:
 - [`02-dash-counter.png`](concepts/02-dash-counter.png) — first satisfying evade/punish
 - [`03-dash-catch-v37.png`](concepts/03-dash-catch-v37.png) — evolved pressure grammar
 
-The concepts are targets, not claims of one-to-one asset reproduction. The build uses achievable procedural geometry and simple sprites.
+The concepts are targets, not claims of one-to-one asset reproduction. The
+combatants use five deterministic top-down sprites rendered from one preserved
+Blender scene; the arena, combat signals, core, shots, trails, particles, and
+hazards remain native 2D rendering.
+
+### Combatant asset contract
+
+- Blender is an offline authoring tool only. The browser loads transparent PNGs
+  as persistent Pixi sprites; it does not load a 3D scene or model.
+- `art/blender/unbroken-combatants.blend` and `render-combatants.py` are the
+  reproducible source for challenger, V.01 sealed/open, and V.37 sealed/open.
+- V.37 visibly inherits the V.01 body. Its solid mutation pieces remain inside
+  the validated body envelope; only thin emissive rails extend beyond it.
+- The procedural 20-unit core remains the authoritative target. Open sprite
+  apertures expose it cleanly; rendered armor never changes collision.
+- The challenger sprite and reused dash ghosts rotate from the same aim value,
+  preserving the existing shot origin and movement read.
+- Reduced motion freezes nonessential actor rotation without suppressing dash,
+  hit, opening, or danger information.
 
 ## Controls
 
@@ -84,6 +102,8 @@ Victory ends on a short champion record: the challenger is logged as the last pe
 - `?debug=entry` starts at the entry/teaching state.
 - `?debug=pressure` starts at the evolved `DASH CATCH` state.
 - `?debug=payoff` starts at the champion payoff.
+- `?debug=run` preserves challenger integrity for a complete input-driven QA
+  run; it never damages HEIR or advances a round.
 - `?spectator=1` runs a read-only presentation suitable for mobile/touch viewing.
 - `?motion=reduce` is a QA override that freezes nonessential venue motion.
 - `?profile=1` records a normalized 180-frame pacing sample on the canvas.
@@ -92,6 +112,9 @@ These routes are for deterministic review and do not represent separate game mod
 
 ## Scope boundary
 
-Included: one arena, one player kit, one boss identity, two authored versions, one meaningful choice, one pressure mutation, one payoff, local presentation state, spectator view, and verification hooks.
+Included: one arena, one player kit, one boss identity, two authored versions,
+five offline-rendered combatant sprites, one meaningful choice, one pressure
+mutation, one payoff, local presentation state, spectator view, and verification
+hooks.
 
 Excluded: real networking/global queue, accounts, chat, persistent leaderboards, model training, generative attacks, frame-by-frame AI control, multiple bosses or modes, inventories, cosmetics, broad progression, controller/touch gameplay, and large content catalogs.

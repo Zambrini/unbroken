@@ -137,7 +137,7 @@ or below 10ms p95 and 12ms maximum in the same environment as the 0.4.0 baseline
 
 ### `0.6.0` — Combatants Forged
 
-Status: **selected after public `0.5.0` replay — in progress**
+Status: **shipped locally 2026-07-14 — public verification pending**
 
 With the venue materialized, the procedural challenger wedge and layered HEIR
 polygons are now the largest remaining gap from the approved concepts. Forge
@@ -166,6 +166,16 @@ white core, challenger aim, dash ghosts, and V.37 lineage remain immediate; no
 opaque sprite crosses its validated collision boundary; the complete V.01 to
 V.37 run remains winnable by real input; mobile/reduced-motion, console/network,
 tests, and performance remain clean; and all source renders are reproducible.
+
+Local gate result: five deterministic renders now come from one preserved
+Blender scene and script, load as persistent Pixi sprites with no runtime 3D,
+and preserve the validated 2D combat contract. Real dash, live core damage, the
+complete V.01 → V.37 → `LAST CONQUEROR` flow, 390×844 mobile width, reduced
+motion, and a 180-frame pressure sample at 7.5ms p95 / 7.9ms maximum are
+verified. The `debug=run` harness preserved only challenger integrity; all 60
+boss hits passed through real break-range, aim, shot, vulnerability, and health
+logic. Deployment and public replay are the remaining release checks; no
+subsequent checkpoint is selected before that replay.
 
 ## Future validation — shared arena
 

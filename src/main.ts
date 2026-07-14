@@ -93,7 +93,15 @@ const game = new Game({
 
 await game.init();
 
+const qaRun = new URLSearchParams(window.location.search).get('debug') === 'run';
+const qaIntegrityTimer = qaRun
+  ? window.setInterval(() => window.__UNBROKEN__?.setPlayerIntegrity(3), 100)
+  : undefined;
+
 document.querySelector<HTMLButtonElement>('#enter-button')!.addEventListener('click', () => void game.enter());
 document.querySelector<HTMLButtonElement>('#mute-button')!.addEventListener('click', () => game.toggleMute());
 
-window.addEventListener('beforeunload', () => game.destroy());
+window.addEventListener('beforeunload', () => {
+  if (qaIntegrityTimer !== undefined) window.clearInterval(qaIntegrityTimer);
+  game.destroy();
+});

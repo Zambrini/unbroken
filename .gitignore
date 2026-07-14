@@ -13,3 +13,17 @@ artifacts/*.yml
 !docs/concepts/*.png
 !docs/checkpoints/
 !docs/checkpoints/**/*.png
+
+# Preserve the reproducible Blender source and its runtime actor renders when a
+# user-level Git ignore excludes binary art files globally.
+!art/
+!art/blender/
+!art/blender/*.blend
+!art/blender/*.py
+!art/blender/*.md
+art/blender/*.blend1
+__pycache__/
+*.pyc
+!src/assets/
+!src/assets/actors/
+!src/assets/actors/*.png

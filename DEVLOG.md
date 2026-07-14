@@ -6,6 +6,56 @@ what remains intentionally outside the build.
 
 The public version is available through the in-game **PROJECT / DEVLOG** link.
 
+## `0.6.0` — Combatants Forged
+
+- **Shipped locally:** 2026-07-14
+- **Public verification:** pending deployment
+- **Player impact:** the challenger and HEIR now read as constructed machines instead of procedural wedges, while every proven combat decision behaves exactly as before.
+
+Replaying the materialized `0.5.0` arena beside the approved concepts made the
+next weakness obvious: the venue had physical depth, but its two most important
+subjects did not. This checkpoint replaces only those rendered hulls. Blender
+authors them offline; Pixi presents them as ordinary persistent 2D sprites.
+
+### What changed in the fight
+
+- The challenger is a forged white lance/delta craft with charcoal structure,
+  cyan channels, and twin engines. Dash ghosts reuse that same texture.
+- V.01 has sealed and open renders built from four beveled armor assemblies
+  around the existing procedural core.
+- V.37 inherits the V.01 body before adding compact mutation hardware and thin
+  energy-only rails. The physical machine remains honest to the validated
+  collider.
+- Five transparent runtime PNGs come from one preserved Blender scene and one
+  deterministic render script. Their combined size stays below 0.9MiB.
+- The browser remains fixed-camera 2D. Core, aim, shots, trails, particles, hit
+  punch, forecasts, hazards, safe route, arena, HUD, and audio remain native to
+  the existing game.
+
+### What was verified locally
+
+- Rendered evidence covers the forged V.01 entry, a real-input dash and ghosts,
+  open armor with a live core hit, V.37 pressure, 390×844 mobile spectator,
+  reduced motion, and the reproducible Blender source.
+- A live V.37 `CORE HIT` passes through the open armor and preserves the white/
+  cyan impact hierarchy.
+- A full production-preview run reached `LAST CONQUEROR`: V.01 taught the
+  visible `DASH CATCH` mutation and V.37 fell in 35.63 seconds. The QA harness
+  restored only challenger integrity; real pointer aim/fire and Space dashes
+  delivered every boss hit.
+- Mobile reports exactly 390 pixels of scroll width at 390×844. Reduced motion
+  reports active and freezes nonessential actor rotation.
+- The 180-frame pressure sample measured 6.943ms mean, 6.9ms cadence, 7.5ms
+  p95, 7.9ms maximum, and zero missed frames.
+- Gameplay and simulation files are unchanged.
+
+### Kept out of this checkpoint
+
+No runtime 3D, GLB, Three.js, attack, timing, damage, collision, progression,
+networking, queue service, AI training, account, mode, boss, controller, or
+touch gameplay was added. The checkpoint is complete locally; deployment and a
+fresh public replay remain before the next checkpoint is selected.
+
 ## `0.5.0` — Arena Materialized
 
 - **Shipped:** 2026-07-14
@@ -252,9 +302,7 @@ Mobile and touch devices receive the read-only spectator presentation.
 
 ## Next transmission
 
-`0.6.0 — Combatants Forged` is selected after replaying the public `0.5.0`
-build beside the approved concepts. The materialized venue now exposes the
-procedural challenger wedge and HEIR polygons as the largest visual gap. The
-next checkpoint uses Blender only as an offline source for five reproducible
-top-down sprites; runtime 3D, combat changes, new actors, attacks, modes, and
-progression remain out of scope.
+No checkpoint is selected yet. First deploy `0.6.0`, verify the public game and
+companion dossier, then replay the public entry, dash-counter, open-core, and
+V.37 pressure states beside the approved concepts. That replay—not a checklist—
+will identify the next highest-leverage player-visible weakness.

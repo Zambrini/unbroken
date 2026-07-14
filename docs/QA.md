@@ -25,7 +25,7 @@
 
 The audience, queue, challenger identities, evolution, and records are local simulations. This pass does not validate networking, persistence, trained-model behavior, controller play, or touch gameplay because those systems are outside `0.1.0`.
 
-## Latest acceptance — `0.5.0` Arena Materialized
+## Prior acceptance — `0.5.0` Arena Materialized
 
 - Date: 2026-07-14
 - Targets: desktop internal browser at a 1440×900 review frame; mobile spectator at 390×844
@@ -51,3 +51,49 @@ The audience, queue, challenger identities, evolution, and records are local sim
 ### Preserved contract
 
 Attack scripts, order, timing, damage, collision, safe answers, camera, controls, HUD, and procedural audio are unchanged. This acceptance does not cover networking, persistence, trained-model behavior, controller/touch gameplay, additional bosses, modes, or progression.
+
+## Latest acceptance — `0.6.0` Combatants Forged
+
+- Date: 2026-07-14
+- Release state: completed locally; deployment and public-build verification pending
+- Targets: desktop internal browser at 1440×900; mobile spectator at 390×844
+
+### Asset and runtime integrity
+
+- Five deterministic transparent sprites cover challenger, V.01 sealed/open,
+  and V.37 sealed/open.
+- `art/blender/unbroken-combatants.blend` and `render-combatants.py` reproduce
+  the runtime images from preserved source.
+- All five PNGs remain below 0.9MiB combined.
+- Pixi loads persistent sprites and reuses the challenger texture for dash
+  ghosts. No Blender, GLB, WebGL 3D scene, or runtime model logic ships into
+  gameplay.
+- V.01 displays at 320 world units and V.37 at 336. V.37's added outer reach is
+  explicitly thin energy; solid armor stays coherent with the inherited body
+  collision.
+
+### Played and inspected
+
+- Inspected the forged V.01 entry state, a real-input dash with persistent
+  ghosts, an exposed-core state, and V.37 pressure against the approved visual
+  concepts.
+- Confirmed a live V.37 `CORE HIT` lands through the open armor while the
+  procedural white/cyan core and impact punch remain dominant.
+- Completed V.01 → inheritance → V.37 → `LAST CONQUEROR` in the production
+  preview through the internal browser. V.37 fell in 35.63 seconds; the QA
+  route restored only challenger integrity while real pointer aim/fire and
+  Space dashes delivered all 60 accepted core hits.
+- Confirmed the 390×844 mobile spectator has `scrollWidth = 390`.
+- Confirmed the reduced-motion review route reports `true` and freezes
+  nonessential actor motion while preserving combat-significant feedback.
+
+### Performance and preserved contract
+
+- All 35 automated checks, TypeScript, the production build, and diff validation pass.
+- A 180-frame V.37 pressure sample measured 6.943ms mean, 6.9ms cadence, 7.5ms
+  p95, 7.9ms maximum, and zero missed frames.
+- No gameplay or simulation file changed. Attack scripts, order, timing, damage,
+  collision, safe answers, camera, controls, HUD, arena, and procedural audio
+  retain the `0.5.0` contract.
+- Public deployment, public asset/network smoke, and fresh public replay remain
+  required before selecting another checkpoint.
