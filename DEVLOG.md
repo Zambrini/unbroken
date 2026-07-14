@@ -8,8 +8,8 @@ The public version is available through the in-game **PROJECT / DEVLOG** link.
 
 ## `0.6.0` — Combatants Forged
 
-- **Shipped locally:** 2026-07-14
-- **Public verification:** pending deployment
+- **Shipped:** 2026-07-14
+- **Public verification:** GitHub Pages deployment `29369239995` passed
 - **Player impact:** the challenger and HEIR now read as constructed machines instead of procedural wedges, while every proven combat decision behaves exactly as before.
 
 Replaying the materialized `0.5.0` arena beside the approved concepts made the
@@ -48,13 +48,17 @@ authors them offline; Pixi presents them as ordinary persistent 2D sprites.
 - The 180-frame pressure sample measured 6.943ms mean, 6.9ms cadence, 7.5ms
   p95, 7.9ms maximum, and zero missed frames.
 - Gameplay and simulation files are unchanged.
+- The public 1440×900 build repeated the real dash with zero browser logs; a
+  clean 180-frame pressure sample measured 7.4ms p95, 7.8ms maximum, and zero
+  missed frames. The public 390×844 spectator remained exactly 390 pixels wide.
 
 ### Kept out of this checkpoint
 
 No runtime 3D, GLB, Three.js, attack, timing, damage, collision, progression,
 networking, queue service, AI training, account, mode, boss, controller, or
-touch gameplay was added. The checkpoint is complete locally; deployment and a
-fresh public replay remain before the next checkpoint is selected.
+touch gameplay was added. The public concept replay selected one bounded next
+checkpoint: make HEIR read as one interlocking armored citadel instead of four
+detached turbine petals, without changing the fight or the challenger.
 
 ## `0.5.0` — Arena Materialized
 

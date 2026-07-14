@@ -137,7 +137,7 @@ or below 10ms p95 and 12ms maximum in the same environment as the 0.4.0 baseline
 
 ### `0.6.0` — Combatants Forged
 
-Status: **shipped locally 2026-07-14 — public verification pending**
+Status: **shipped and verified publicly 2026-07-14**
 
 With the venue materialized, the procedural challenger wedge and layered HEIR
 polygons are now the largest remaining gap from the approved concepts. Forge
@@ -167,15 +167,43 @@ opaque sprite crosses its validated collision boundary; the complete V.01 to
 V.37 run remains winnable by real input; mobile/reduced-motion, console/network,
 tests, and performance remain clean; and all source renders are reproducible.
 
-Local gate result: five deterministic renders now come from one preserved
+Shipped gate result: five deterministic renders now come from one preserved
 Blender scene and script, load as persistent Pixi sprites with no runtime 3D,
 and preserve the validated 2D combat contract. Real dash, live core damage, the
 complete V.01 → V.37 → `LAST CONQUEROR` flow, 390×844 mobile width, reduced
 motion, and a 180-frame pressure sample at 7.5ms p95 / 7.9ms maximum are
 verified. The `debug=run` harness preserved only challenger integrity; all 60
 boss hits passed through real break-range, aim, shot, vulnerability, and health
-logic. Deployment and public replay are the remaining release checks; no
-subsequent checkpoint is selected before that replay.
+logic. GitHub Pages deployment `29369239995` passed its clean install, tests,
+build, and deploy jobs. The public 1440×900 build repeated the real dash with
+zero browser logs; its clean 180-frame pressure sample measured 7.4ms p95 /
+7.8ms maximum with zero missed frames, and the 390×844 spectator remained
+exactly 390 pixels wide.
+
+### `0.7.0` — HEIR Citadel Authority
+
+Status: **selected after the public `0.6.0` concept replay**
+
+The forged sprites close the actor/material gap, but the public replay exposes
+one narrower weakness: HEIR still reads first as four detached turbine petals,
+while the approved V.01 and V.37 concepts promise one interlocking armored
+citadel. Refine only HEIR's Blender source and its four renders.
+
+- Join the inherited plate rig with a dark central diamond chassis and visible
+  mechanical bridges so V.01 reads as one machine at gameplay scale.
+- Replace the rounded flower cadence with stronger cardinal/diagonal facets and
+  two restrained red emitter nodes already present in the approved lineage.
+- Let V.37 inherit that exact chassis, then add longer axial spines and compact
+  emitter pods; mutation must read as escalation, not a different boss.
+- Preserve the transparent core socket, sealed/open displacement, 320/336-unit
+  display sizes, 132-unit body collision, runtime effects, and five-sprite
+  asset contract. The challenger is already close enough and stays untouched.
+
+Exit gate: at 1440×900 V.01 reads first as a compact armored citadel rather than
+a turbine or flower, V.37 visibly inherits and escalates it during `DASH CATCH`,
+the white core and open armor remain immediate, no opaque pixel crosses the
+validated collision envelope, and the same input, mobile, reduced-motion,
+console/network, test, full-run, and frame-pacing gates remain clean.
 
 ## Future validation — shared arena
 

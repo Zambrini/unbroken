@@ -55,7 +55,7 @@ Attack scripts, order, timing, damage, collision, safe answers, camera, controls
 ## Latest acceptance — `0.6.0` Combatants Forged
 
 - Date: 2026-07-14
-- Release state: completed locally; deployment and public-build verification pending
+- Release state: shipped and verified publicly
 - Targets: desktop internal browser at 1440×900; mobile spectator at 390×844
 
 ### Asset and runtime integrity
@@ -95,5 +95,11 @@ Attack scripts, order, timing, damage, collision, safe answers, camera, controls
 - No gameplay or simulation file changed. Attack scripts, order, timing, damage,
   collision, safe answers, camera, controls, HUD, arena, and procedural audio
   retain the `0.5.0` contract.
-- Public deployment, public asset/network smoke, and fresh public replay remain
-  required before selecting another checkpoint.
+- GitHub Pages deployment `29369239995` passed clean install, tests, build, and
+  deployment. The public game, companion site, bundle, stylesheet, and all five
+  actor images returned HTTP 200 with the expected content types.
+- The public 1440×900 entry and real dash rendered with zero browser logs. A
+  clean public 180-frame V.37 pressure sample measured 6.943ms mean, 6.9ms
+  cadence, 7.4ms p95, 7.8ms maximum, and zero missed frames.
+- The public 390×844 spectator reported `scrollWidth = 390`, `scrollHeight =
+  844`, and zero browser logs.

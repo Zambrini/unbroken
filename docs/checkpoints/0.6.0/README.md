@@ -73,6 +73,11 @@ arena, spectator behavior, and audio retain the verified `0.5.0` contract. This
 checkpoint adds no runtime 3D, new attack, actor, boss, mode, progression,
 networking, account, trained model, controller, or touch gameplay.
 
-The checkpoint is complete locally. Deployment, public-build verification, and
-a fresh public replay are still pending; the next checkpoint will be selected
-only after those checks.
+The checkpoint shipped through GitHub Pages deployment `29369239995`. The
+public 1440×900 build repeated the real dash with zero browser logs, a clean
+180-frame V.37 pressure sample measured 7.4ms p95 / 7.8ms maximum with zero
+missed frames, and the 390×844 spectator remained exactly 390 pixels wide.
+
+The public concept replay selected `0.7.0` HEIR Citadel Authority: join the
+remaining detached-petal read into the heavier interlocking chassis promised by
+the concepts while leaving the challenger and combat contract untouched.

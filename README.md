@@ -4,12 +4,12 @@ UNBROKEN is a desktop-first 2D boss-arena prototype. You are the current challen
 
 ## Status
 
-- **Version:** `0.6.0` Combatants Forged checkpoint, completed locally; public verification is pending.
+- **Version:** `0.6.0` Combatants Forged, shipped and verified publicly.
 - **Goal:** make the challenger and HEIR read as constructed machines while preserving the proven 2D fight, collision, camera, controls, and combat grammar.
-- **Next checkpoint:** unselected until the deployed `0.6.0` build is replayed against the approved concepts.
+- **Next checkpoint:** `0.7.0` HEIR Citadel Authority — replace the remaining turbine/flower read with the heavier interlocking citadel silhouette established by the concepts, without changing combat.
 - **Verified locally:** 35 automated checks, five reproducible Blender sprites, a complete real-input V.01 → V.37 run through `LAST CONQUEROR`, 390×844 mobile width, reduced motion, and a 180-frame pressure sample at 7.5ms p95 / 7.9ms maximum with zero missed frames.
 
-This build is deliberately local and on rails. The audience, queue, challengers, and post-victory evolution are simulated presentation—not a live multiplayer service or trained AI.
+This build is deliberately client-only and on rails. The audience, queue, challengers, and post-victory evolution are simulated presentation—not a live multiplayer service or trained AI.
 
 **Project dossier:** [public companion site](https://zambrini.github.io/unbroken/project/) · [director’s devlog](DEVLOG.md) · [public source](https://github.com/Zambrini/unbroken)
 

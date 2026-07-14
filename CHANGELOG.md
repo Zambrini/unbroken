@@ -12,7 +12,7 @@ All notable changes are recorded here. The project uses semantic versioning.
 - Preserved the procedural core, aim line, shots, dash streak and ghosts, particles, hit punch, forecasts, danger, safe route, and V.37 energy rails above and around the new physical hulls.
 - Kept the validated actor footprint honest with a 320-unit V.01 display and 336-unit V.37 display whose additional outer reach is energy-only.
 
-### Verified locally
+### Verified
 
 - Passed all 35 automated checks, TypeScript, the production build, and diff validation.
 - Inspected rendered V.01 entry, real-input dash, exposed-core hit, V.37 pressure, reduced-motion, mobile spectator, and reproducible Blender-source states.
@@ -22,7 +22,8 @@ All notable changes are recorded here. The project uses semantic versioning.
 - Confirmed reduced motion is active and removes nonessential actor rotation while retaining combat-significant feedback.
 - Sampled 180 V.37 pressure frames at 6.943ms mean, 6.9ms cadence, 7.5ms p95, 7.9ms maximum, and zero missed frames.
 - Kept the five runtime PNGs below 0.9MiB combined and made no gameplay or simulation changes.
-- Completed the checkpoint locally. Public deployment and public-build verification remain pending.
+- Shipped GitHub Pages deployment `29369239995`; the public game, companion site, bundle, stylesheet, and all five actor images return successfully.
+- Replayed the public 1440×900 dash and V.37 pressure states with zero browser logs; the clean pressure sample measured 7.4ms p95 / 7.8ms maximum with zero missed frames, and mobile remained exactly 390 pixels wide at 390×844.
 
 ## [0.5.0] — 2026-07-14
 
