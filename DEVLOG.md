@@ -6,6 +6,50 @@ what remains intentionally outside the build.
 
 The public version is available through the in-game **PROJECT / DEVLOG** link.
 
+## `0.3.0` — Actor Authority
+
+- **Shipped:** 2026-07-14
+- **Player impact:** HEIR now occupies the arena like a machine built to stop humanity's champion, while the challenger and every committed dash read with equal physical clarity.
+
+The punish contract was mechanically honest after `0.2.0`, but the approved
+concept comparison exposed the next weakness immediately: both combatants were
+thin line work floating inside the arena. This checkpoint gives the existing
+duel mass and impact. It does not add another attack, phase, boss, or system.
+
+### What changed in the fight
+
+- V.01 now has a larger, layered armored hull around a physical core socket.
+  The socket visibly seals during danger and opens around the white vulnerable
+  core during the punish window.
+- V.37 inherits that same structural rig, then grows filled mutation emitters
+  and thin energy rails. The evolution reads as an authored answer built onto
+  HEIR rather than an unrelated silhouette.
+- HEIR's solid body radius grows from 96 to 132 units to match the new hull.
+  With the challenger's 14-unit radius, center-to-center clearance is 146 units,
+  leaving a 124-unit punish band before the 270-unit break-range boundary.
+- The challenger receives a stronger layered hull, directional dash ghosts, and
+  a brighter streak. The existing hit flash now lands as a 75ms white/cyan punch.
+- Attack scripts, attack timing, damage, camera, controls, and HUD stay fixed.
+
+### What was verified
+
+- Rendered desktop captures cover entry scale, dash commitment, core impact,
+  body exclusion, armor-only `CORE MISSED`, V.37 pressure, and the final payoff.
+- The physical contract still holds: the full challenger collider clears the
+  boss, while the punish band remains at least 120 units wide.
+- A 180-frame V.37 pressure sample measured 8.33ms mean, 9.2ms p95, and 9.4ms
+  maximum frame interval.
+- Mobile remains a clear read-only spectator experience.
+- A real-input V.01 → V.37 run reached `LAST CONQUEROR`. Debug support stabilized
+  only challenger integrity for observation; it never damaged or advanced HEIR.
+- All 26 automated checks pass.
+
+### Kept out of this checkpoint
+
+No attack logic, timing, damage, progression, networking, queue service, AI
+training, account, or content expansion was added. The next checkpoint will be
+chosen only after replaying this shipped build.
+
 ## `0.2.0` — Make the punish contract real
 
 - **Shipped:** 2026-07-14

@@ -47,7 +47,30 @@ The original slice described a dash-versus-safety tradeoff, but the player began
 
 Exit gate: standing still cannot punish; walking in can punish without spending dash; dashing in reaches the opening sooner; inaccurate fire cannot damage HEIR; and an opening dash is still cooling down when the next threat activates.
 
-## After `0.2.0` — next director cycle
+## `0.3.0` — Actor Authority
+
+Status: **shipped 2026-07-14**
+
+The combat contract was sound, but the rendered actors still read like thin
+diagram elements inside a large arena. This checkpoint gives HEIR and the
+challenger physical presence without adding an attack or changing the fight's
+authored rhythm.
+
+- Build V.01 from a larger layered hull with a clearly physical core socket.
+- Let V.37 inherit the same structural rig, then extend it with filled emitters
+  and thin energy rails that read as mutation rather than a different boss.
+- Pair the larger HEIR silhouette with a 132-unit solid body radius, preserving
+  at least 120 units of usable punish band inside `BREAK RANGE`.
+- Strengthen the challenger hull, dash ghosts, and streak so player movement
+  holds its own against the boss.
+- Turn the existing hit flash into a 75ms white/cyan impact punch.
+- Preserve attack scripts, timing, damage, camera, controls, and HUD.
+
+Exit gate: V.01 and V.37 carry materially more visual mass, the core's sealed
+and open states remain instantly readable, the physical exclusion matches the
+new hull, and the complete fight remains performant and winnable by real input.
+
+## After `0.3.0` — next director cycle
 
 Status: **unshipped — selected only after replay**
 

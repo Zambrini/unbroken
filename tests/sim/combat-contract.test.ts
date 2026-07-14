@@ -18,11 +18,13 @@ describe('punish contract', () => {
     const distanceToBreak = startDistance - COMBAT_TUNING.breakRange;
     const minimumWalkMs = (distanceToBreak / COMBAT_TUNING.playerMoveSpeed) * 1_000;
     const dashEndDistance = startDistance - COMBAT_TUNING.dashDistance;
+    const colliderDistance = COMBAT_TUNING.bossBodyRadius + COMBAT_TUNING.playerRadius;
 
     expect(COMBAT_TUNING.playerStart).toEqual(vec(330, 210));
     expect(startDistance).toBeGreaterThan(COMBAT_TUNING.breakRange);
     expect(dashEndDistance).toBeLessThan(COMBAT_TUNING.breakRange);
-    expect(dashEndDistance).toBeGreaterThan(COMBAT_TUNING.bossBodyRadius);
+    expect(dashEndDistance).toBeGreaterThan(colliderDistance);
+    expect(COMBAT_TUNING.breakRange - colliderDistance).toBeGreaterThanOrEqual(120);
     expect(minimumWalkMs - COMBAT_TUNING.dashDurationMs).toBeGreaterThan(250);
   });
 

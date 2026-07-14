@@ -2,6 +2,23 @@
 
 All notable changes are recorded here. The project uses semantic versioning.
 
+## [0.3.0] — 2026-07-14
+
+### Changed
+
+- Rebuilt HEIR // V.01 as a larger layered armored hull with a physical core socket whose sealed and vulnerable states remain unmistakable.
+- Made HEIR // V.37 inherit the baseline structural rig, then added filled mutation emitters and thin energy rails for a stronger evolved silhouette without obscuring attack telegraphs.
+- Increased HEIR's solid body radius from 96 to 132 units. The challenger's full 14-unit collider now stops at 146 units from center, leaving a 124-unit punish band inside `BREAK RANGE`.
+- Strengthened the challenger's layered hull and directional dash ghosts/streak so player movement carries more visual weight.
+- Turned the existing boss flash into a 75ms white/cyan impact punch; attack scripts, timing, damage, camera, controls, and HUD are unchanged.
+
+### Verified
+
+- Kept all 26 automated checks passing and strengthened the combat contract to require full collider clearance plus at least 120 units of usable punish band.
+- Inspected rendered entry, dash commitment, core hit, core miss, body exclusion, V.37 pressure, full payoff, and mobile spectator states.
+- Sampled 180 V.37 pressure frames at 8.33ms mean, 9.2ms p95, and 9.4ms maximum render interval.
+- Completed a real-input V.01 → V.37 run through the payoff, with debug support used only to stabilize challenger integrity and never to damage or advance HEIR.
+
 ## [0.2.0] — 2026-07-14
 
 ### Changed

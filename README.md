@@ -4,10 +4,10 @@ UNBROKEN is a desktop-first 2D boss-arena prototype. You are the current challen
 
 ## Status
 
-- **Version:** `0.2.0` combat-contract checkpoint
-- **Goal:** make the original dodge-and-punish promise mechanically true: approach from outside range, aim through HEIR's armor at the exposed core, and decide whether a faster dash-in punish is worth entering the next threat without dash.
+- **Version:** `0.3.0` Actor Authority checkpoint
+- **Goal:** make the established duel read with the physical authority promised by the approved concepts, while preserving the proven dodge, dash, aim, and punish contract.
 - **Next checkpoint:** selected after replaying the shipped build and identifying the highest-leverage player-visible combat weakness.
-- **Verified:** 26 automated checks plus rendered range, precision, commitment, and full-run evidence.
+- **Verified:** 26 automated checks plus rendered desktop combat, mobile spectating, collision, performance, and full-run evidence.
 
 This build is deliberately local and on rails. The audience, queue, challengers, and post-victory evolution are simulated presentation—not a live multiplayer service or trained AI.
 
@@ -38,7 +38,7 @@ Mobile and touch devices receive the spectator presentation only; touch gameplay
 ## The slice
 
 1. Enter a 45-second round against `HEIR // V.01` after a three-second countdown.
-2. Start outside the dashed `BREAK RANGE`, read a dashed magenta warning, and evade the solid red attack while your full collider stays outside HEIR's body.
+2. Start outside the dashed `BREAK RANGE`, read a dashed magenta warning, and evade the solid red attack while your full collider stays outside HEIR's layered 132-unit hull.
 3. During the short opening, walk into range safely or commit a dash to arrive sooner. The dash then remains unavailable for 2.4 seconds, into the next active threat.
 4. Land shots on the exposed 20-unit white core. Armor-only shots ricochet with `CORE MISSED`; being in range alone is not enough.
 5. Defeat V.01 and watch the local simulation jump forward to evolved `HEIR // V.37: DASH CATCH`.
@@ -71,10 +71,10 @@ npm run preview
 - [Roadmap](ROADMAP.md)
 - [Changelog](CHANGELOG.md)
 - [Director's devlog](DEVLOG.md)
-- [`0.2.0` checkpoint evidence](docs/checkpoints/0.2.0/README.md)
+- [`0.3.0` checkpoint evidence](docs/checkpoints/0.3.0/README.md)
 - [Companion website](public/project/index.html)
 - Concept screens: [entry](docs/concepts/01-entry-v01.png), [dash counter](docs/concepts/02-dash-counter.png), [DASH CATCH](docs/concepts/03-dash-catch-v37.png)
 
-## Deliberately excluded from `0.2.0`
+## Deliberately excluded from `0.3.0`
 
 Real networking, a global queue, accounts, chat, AI training, server persistence, matchmaking, controller/touch play, broad progression, multiple modes, multiple bosses, inventories, cosmetics, content catalogs, and frame-by-frame AI control.
