@@ -95,11 +95,45 @@ every reachable hitbox remains visibly signaled; the `DASH CATCH` safe pocket
 stays readable; and the unchanged two-round fight remains performant and
 winnable.
 
-## After `0.4.0` — next director cycle
+## Next director goal — Visual Convergence
 
-Status: **unshipped — selected only after replay**
+Status: **selected by Daniel on 2026-07-14**
 
-Replay the shipped build and choose one player-visible weakness in movement, attack readability, impact, audio weight, onboarding, or visual authority. Compare the relevant live state with the approved concept when visual execution is the limiting gap. No new systems during this pass.
+Bring the shipped game materially closer to the three approved concepts without
+changing the validated fight. Work one visual layer at a time, compare the real
+rendered entry, dash-counter, and V.37 pressure states after every checkpoint,
+and select the next layer only after a fresh public replay. This is not authority
+for 3D, a renderer rewrite, new gameplay, or decorative noise that competes with
+the combat grammar.
+
+### `0.5.0` — Arena Materialized
+
+Status: **selected — unshipped**
+
+The concepts stage the fight inside a constructed broadcast arena; the current
+build still reads as a flat neon diagram. Materialize the persistent venue first
+because it is visible in every gameplay state.
+
+- Separate static venue art from dynamic lights, hazards, actors, and effects so
+  richer procedural geometry does not consume the frame budget every tick.
+- Give the octagonal floor restrained panel depth, a built containment rail,
+  stepped audience stands, and dense but subordinate spectator lights.
+- Rebuild the cyan relay, magenta prism, red maintenance pod, and camera masts as
+  four physically distinct fixtures with one consistent light direction.
+- Add contact depth and local emissive light without blur filters, shaders,
+  external runtime assets, or a global bloom wash.
+- Preserve the existing HUD, actors, attacks, mask, arena polygon, camera,
+  controls, audio, collision, damage, timing, and safe answers.
+- Reserve dashed magenta for forecasts, solid red for danger, bright white for
+  the challenger and exposed core, and higher environmental values for neither.
+
+Exit gate: the 1440x900 entry, real-input dash-counter, and V.37 pressure states
+read as the same physical televised arena shown in the concepts while HEIR,
+challenger, core, forecasts, danger, and safe route remain the first information
+seen. The full V.01 to V.37 run remains winnable by real input; mobile spectator
+has no overflow or shimmer; reduced-motion removes nonessential venue motion;
+tests, console, and network remain clean; and the V.37 180-frame sample stays at
+or below 10ms p95 and 12ms maximum in the same environment as the 0.4.0 baseline.
 
 ## Future validation — shared arena
 
