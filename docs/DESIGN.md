@@ -1,4 +1,4 @@
-# UNBROKEN `0.1.0` Design
+# UNBROKEN Design Contract
 
 ## Direction
 
@@ -85,6 +85,8 @@ Victory ends on a short champion record: the challenger is logged as the last pe
 - `?debug=pressure` starts at the evolved `DASH CATCH` state.
 - `?debug=payoff` starts at the champion payoff.
 - `?spectator=1` runs a read-only presentation suitable for mobile/touch viewing.
+- `?motion=reduce` is a QA override that freezes nonessential venue motion.
+- `?profile=1` records a normalized 180-frame pacing sample on the canvas.
 
 These routes are for deterministic review and do not represent separate game modes.
 

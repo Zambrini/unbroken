@@ -6,6 +6,52 @@ what remains intentionally outside the build.
 
 The public version is available through the in-game **PROJECT / DEVLOG** link.
 
+## `0.5.0` — Arena Materialized
+
+- **Shipped:** 2026-07-14
+- **Player impact:** the duel now takes place inside a constructed broadcast venue instead of a flat neon diagram, while the proven combat grammar remains the first read.
+
+Replaying `0.4.0` beside the approved concepts exposed the next visual gap: the
+hazards and actors were contained, but the persistent world around them lacked
+material depth. This checkpoint builds the stage itself—floor, shell, rail,
+stands, audience, and fixtures—without adding another gameplay question.
+
+### What changed in the fight
+
+- Restrained floor panels, radial seams, layered shell bevels, and a jointed
+  containment rail turn the octagon into a built structure.
+- Stepped stands and deterministic spectator lights reinforce the globally
+  watched event without outranking forecasts, danger, the core, or safe route.
+- The cyan relay, magenta prism, camera masts, and red maintenance pod now read
+  as four distinct physical fixtures. Each stays in the service band between
+  the reachable collider envelope and the visible containment rail.
+- Persistent venue construction is drawn once; ambient lights, hazards,
+  actors, and effects remain dynamic.
+- Attack scripts, timing, damage, collision, safe answers, camera, controls,
+  HUD, actor behavior, and audio stay fixed.
+
+### What was verified
+
+- Rendered entry, real-input dash-counter, and V.37 pressure states were
+  compared with all three approved concepts. The full HUD, exposed core, dash
+  ghosts, and spent `DASH 2.3S` resource now read together in the counter proof.
+- A real-input V.01 → V.37 run reached `LAST CONQUEROR`; V.37 fell in 14.30
+  seconds across two attempts and eight accepted dash commits. Debug support
+  restored only challenger integrity.
+- The 390×844 spectator has no horizontal overflow. Live reduced-motion venue
+  crops taken 700ms apart are pixel-identical.
+- Same-browser `0.4.0` and `0.5.0` pressure samples both averaged about 6.94ms
+  with zero missed frames; `0.5.0` stayed below 7.8ms maximum.
+- All 28 automated checks, TypeScript, the production build, console, and
+  network checks pass.
+
+### Kept out of this checkpoint
+
+No attack, actor redesign, runtime 3D, renderer rewrite, progression,
+networking, queue service, AI training, account, boss, mode, or content
+expansion was added. The next checkpoint begins only after replaying the public
+build.
+
 ## `0.4.0` — Threat Containment
 
 - **Shipped:** 2026-07-14

@@ -14,10 +14,48 @@ const ARENA_FLOOR_SCREEN = ARENA_FLOOR_POLYGON.flatMap(({ x, y }) => [
   WORLD_ORIGIN.x + x,
   WORLD_ORIGIN.y + y,
 ]);
+const ARENA_SHELL_OUTER = [
+  118, 142,
+  294, 38,
+  1306, 38,
+  1482, 142,
+  1482, 758,
+  1306, 862,
+  294, 862,
+  118, 758,
+];
+const ARENA_SHELL_MIDDLE = [
+  148, 158,
+  312, 60,
+  1288, 60,
+  1452, 158,
+  1452, 742,
+  1288, 840,
+  312, 840,
+  148, 742,
+];
+const ARENA_BEVEL_OUTER = [
+  170, 170,
+  322, 80,
+  1278, 80,
+  1430, 170,
+  1430, 730,
+  1278, 820,
+  322, 820,
+  170, 730,
+];
 const COLORS = {
   void: 0x05070c,
+  shellVoid: 0x070a11,
+  shellShadow: 0x0a0e18,
+  shell: 0x121927,
+  shellFace: 0x1b2434,
   floor: 0x0a1020,
+  floorLow: 0x09111e,
+  floorPanel: 0x0c1626,
   floorHigh: 0x0d1829,
+  audienceSeat: 0x20283b,
+  audienceNeutral: 0x9baabf,
   cyan: 0x2ef2ff,
   cyanDim: 0x137f96,
   magenta: 0xff2bb5,
@@ -28,6 +66,25 @@ const COLORS = {
   armorHigh: 0x34394d,
   armorFace: 0x3f465f,
 } as const;
+
+interface AudienceRun {
+  readonly from: Vec2;
+  readonly to: Vec2;
+  readonly outward: Vec2;
+  readonly seats: number;
+  readonly rows: number;
+}
+
+const AUDIENCE_RUNS: readonly AudienceRun[] = [
+  { from: { x: 350, y: 72 }, to: { x: 1250, y: 72 }, outward: { x: 0, y: -1 }, seats: 44, rows: 2 },
+  { from: { x: 189, y: 157 }, to: { x: 315, y: 82 }, outward: { x: -0.52, y: -0.86 }, seats: 10, rows: 2 },
+  { from: { x: 1285, y: 82 }, to: { x: 1411, y: 157 }, outward: { x: 0.52, y: -0.86 }, seats: 10, rows: 2 },
+  { from: { x: 168, y: 204 }, to: { x: 168, y: 696 }, outward: { x: -1, y: 0 }, seats: 23, rows: 2 },
+  { from: { x: 1432, y: 204 }, to: { x: 1432, y: 696 }, outward: { x: 1, y: 0 }, seats: 23, rows: 2 },
+  { from: { x: 189, y: 743 }, to: { x: 315, y: 818 }, outward: { x: -0.52, y: 0.86 }, seats: 10, rows: 2 },
+  { from: { x: 1285, y: 818 }, to: { x: 1411, y: 743 }, outward: { x: 0.52, y: 0.86 }, seats: 10, rows: 2 },
+  { from: { x: 350, y: 828 }, to: { x: 1250, y: 828 }, outward: { x: 0, y: 1 }, seats: 44, rows: 2 },
+];
 
 export interface ShotView {
   position: Vec2;
@@ -74,15 +131,28 @@ export interface RenderFrame {
   readonly shake: number;
 }
 
+interface FramePacingSample {
+  readonly frames: number;
+  readonly mean: number;
+  readonly cadence: number;
+  readonly p95: number;
+  readonly max: number;
+  readonly missedFrames: number;
+  readonly worstFrameRatio: number;
+}
+
 export class ArenaRenderer {
   private readonly app = new Application();
   private readonly root = new Container();
-  private readonly backgroundGraphics = new Graphics();
+  private readonly staticWorldGraphics = new Graphics();
+  private readonly ambientGraphics = new Graphics();
   private readonly hazardLayer = new Container();
   private readonly hazardGraphics = new Graphics();
   private readonly hazardMask = new Graphics();
+  private readonly staticRailGraphics = new Graphics();
   private readonly foregroundGraphics = new Graphics();
-  private readonly reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  private readonly reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    || new URLSearchParams(window.location.search).get('motion') === 'reduce';
 
   constructor(private readonly mount: HTMLElement) {}
 
@@ -100,8 +170,22 @@ export class ArenaRenderer {
     this.hazardMask.poly(ARENA_FLOOR_SCREEN).fill(COLORS.white);
     this.hazardLayer.addChild(this.hazardGraphics, this.hazardMask);
     this.hazardLayer.mask = this.hazardMask;
-    this.root.addChild(this.backgroundGraphics, this.hazardLayer, this.foregroundGraphics);
+    this.root.addChild(
+      this.staticWorldGraphics,
+      this.ambientGraphics,
+      this.hazardLayer,
+      this.staticRailGraphics,
+      this.foregroundGraphics,
+    );
     this.app.stage.addChild(this.root);
+    this.drawStaticWorld(this.staticWorldGraphics);
+    this.drawStaticRail(this.staticRailGraphics);
+    this.app.canvas.dataset.reducedMotion = String(this.reducedMotion);
+    if (new URLSearchParams(window.location.search).get('profile') === '1') {
+      void this.measureFramePacing(180, 30).then((sample) => {
+        this.app.canvas.dataset.framePacing = JSON.stringify(sample);
+      });
+    }
   }
 
   render(frame: RenderFrame): void {
@@ -115,18 +199,16 @@ export class ArenaRenderer {
       (this.app.screen.height - WORLD_HEIGHT * scale) / 2 + shakeY,
     );
 
-    const background = this.backgroundGraphics;
+    const ambient = this.ambientGraphics;
     const hazards = this.hazardGraphics;
     const foreground = this.foregroundGraphics;
-    background.clear();
+    ambient.clear();
     hazards.clear();
     foreground.clear();
 
-    background.rect(0, 0, WORLD_WIDTH, WORLD_HEIGHT).fill(COLORS.void);
-    this.drawAudience(background, frame);
-    this.drawArena(background, frame);
-    this.drawFixtures(background, frame.nowMs);
-    this.drawBossBackdrop(background);
+    this.drawAudienceLights(ambient, frame);
+    this.drawArenaSignals(ambient, frame);
+    this.drawFixtureLights(ambient, frame.nowMs);
     this.drawHazards(hazards, frame);
     this.drawContainmentRail(foreground, frame);
     this.drawTrails(foreground, frame.trails);
@@ -141,44 +223,194 @@ export class ArenaRenderer {
     this.app.destroy(true, { children: true });
   }
 
-  private drawAudience(g: Graphics, frame: RenderFrame): void {
-    const pulse = 0.25 + (Math.sin(frame.nowMs * (frame.pressure ? 0.016 : 0.006)) + 1) * 0.14;
-    const rows = [46, 74, 826, 854];
-    rows.forEach((y, row) => {
-      for (let x = 108; x <= 1492; x += 22) {
-        const index = Math.floor((x - 108) / 22) + row * 7;
-        const lit = (index * 17 + Math.floor(frame.nowMs / 170)) % 11 < (frame.spectator ? 5 : 3);
-        const color = index % 5 === 0 ? COLORS.cyan : index % 3 === 0 ? COLORS.white : COLORS.magenta;
-        g.rect(x, y, 10, 4).fill({ color, alpha: lit ? pulse + 0.32 : 0.09 });
-      }
+  private measureFramePacing(frames: number, warmupFrames: number): Promise<FramePacingSample> {
+    const sampleCount = Math.max(1, Math.round(frames));
+    let warmupRemaining = Math.max(0, Math.round(warmupFrames));
+    const samples: number[] = [];
+
+    return new Promise((resolve) => {
+      let previous = performance.now();
+      const sample = (now: number) => {
+        const delta = now - previous;
+        previous = now;
+        if (warmupRemaining > 0) {
+          warmupRemaining -= 1;
+          requestAnimationFrame(sample);
+          return;
+        }
+        samples.push(delta);
+        if (samples.length < sampleCount) {
+          requestAnimationFrame(sample);
+          return;
+        }
+        const sorted = [...samples].sort((left, right) => left - right);
+        const p95Index = Math.min(sorted.length - 1, Math.ceil(sorted.length * 0.95) - 1);
+        const cadence = sorted[Math.floor(sorted.length / 2)] ?? 0;
+        const max = sorted.at(-1) ?? 0;
+        resolve({
+          frames: samples.length,
+          mean: samples.reduce((total, value) => total + value, 0) / samples.length,
+          cadence,
+          p95: sorted[p95Index] ?? 0,
+          max,
+          missedFrames: samples.filter((value) => cadence > 0 && value > cadence * 1.5).length,
+          worstFrameRatio: cadence > 0 ? max / cadence : 0,
+        });
+      };
+      requestAnimationFrame(sample);
     });
-    for (let y = 136; y <= 744; y += 21) {
-      const lit = (y * 13 + Math.floor(frame.nowMs / 190)) % 9 < 3;
-      g.rect(82, y, 5, 10).fill({ color: lit ? COLORS.cyan : COLORS.magenta, alpha: lit ? pulse : 0.08 });
-      g.rect(1513, y, 5, 10).fill({ color: lit ? COLORS.magenta : COLORS.cyan, alpha: lit ? pulse : 0.08 });
-    }
   }
 
-  private drawArena(g: Graphics, frame: RenderFrame): void {
-    g.poly(ARENA_FLOOR_SCREEN).fill(COLORS.floor).stroke({ color: COLORS.magenta, alpha: 0.64, width: 3 });
-    g.poly([210, 196, 348, 116, 1252, 116, 1390, 196, 1390, 704, 1252, 784, 348, 784, 210, 704])
-      .stroke({ color: COLORS.cyanDim, alpha: 0.28, width: 1 });
+  private drawStaticWorld(g: Graphics): void {
+    g.rect(0, 0, WORLD_WIDTH, WORLD_HEIGHT).fill(COLORS.void);
+    g.poly(ARENA_SHELL_OUTER)
+      .fill(COLORS.shellVoid)
+      .stroke({ color: COLORS.shellFace, alpha: 0.42, width: 2 });
+    g.poly(ARENA_SHELL_MIDDLE)
+      .fill(COLORS.shellShadow)
+      .stroke({ color: COLORS.shellFace, alpha: 0.5, width: 2 });
 
-    [105, 210, 320].forEach((radius, index) => {
-      g.circle(WORLD_ORIGIN.x, WORLD_ORIGIN.y, radius)
-        .stroke({ color: COLORS.cyan, alpha: 0.13 - index * 0.018, width: 1 });
+    this.drawAudienceStructure(g);
+    this.drawArenaStructure(g);
+    this.drawFixtureBodies(g);
+    this.drawBossBackdrop(g);
+  }
+
+  private drawAudienceStructure(g: Graphics): void {
+    AUDIENCE_RUNS.forEach((run) => {
+      const angle = Math.atan2(run.to.y - run.from.y, run.to.x - run.from.x);
+      g.moveTo(run.from.x, run.from.y).lineTo(run.to.x, run.to.y)
+        .stroke({ color: COLORS.shellFace, alpha: 0.66, width: 22 });
+      g.moveTo(run.from.x, run.from.y).lineTo(run.to.x, run.to.y)
+        .stroke({ color: COLORS.shellVoid, alpha: 1, width: 15 });
+
+      for (let row = 0; row < run.rows; row += 1) {
+        for (let seat = 0; seat < run.seats; seat += 1) {
+          const center = this.audienceSeatPosition(run, row, seat);
+          g.poly(this.orientedRect(center, angle, 4.8, 2.15))
+            .fill({ color: COLORS.audienceSeat, alpha: row === 0 ? 0.92 : 0.7 });
+        }
+      }
     });
+  }
+
+  private drawAudienceLights(g: Graphics, frame: RenderFrame): void {
+    const phase = this.reducedMotion ? 0 : Math.floor(frame.nowMs / 560);
+    const pulse = this.reducedMotion ? 0.58 : 0.54 + Math.sin(frame.nowMs * 0.002) * 0.045;
+    const density = (frame.spectator ? 5 : 4) + (frame.pressure ? 1 : 0);
+    let globalIndex = 0;
+
+    AUDIENCE_RUNS.forEach((run) => {
+      const angle = Math.atan2(run.to.y - run.from.y, run.to.x - run.from.x);
+      for (let row = 0; row < run.rows; row += 1) {
+        for (let seat = 0; seat < run.seats; seat += 1) {
+          const lit = (globalIndex * 7 + phase * 5) % 19 < density;
+          if (lit) {
+            const center = this.audienceSeatPosition(run, row, seat);
+            const color = globalIndex % 11 === 0
+              ? COLORS.audienceNeutral
+              : globalIndex % 4 === 0
+                ? COLORS.cyan
+                : COLORS.magenta;
+            const colorAlpha = color === COLORS.audienceNeutral ? 0.52 : 0.59;
+            g.poly(this.orientedRect(center, angle, 4, 1.5))
+              .fill({ color, alpha: pulse * colorAlpha });
+          }
+          globalIndex += 1;
+        }
+      }
+    });
+  }
+
+  private drawArenaStructure(g: Graphics): void {
+    g.poly(this.offsetPoints(ARENA_BEVEL_OUTER, 7, 9))
+      .fill({ color: COLORS.void, alpha: 0.92 });
+    g.poly(ARENA_BEVEL_OUTER)
+      .fill(COLORS.shell)
+      .stroke({ color: COLORS.shellFace, alpha: 0.56, width: 2 });
+    g.poly(ARENA_FLOOR_SCREEN).fill(COLORS.floor);
+
+    const vertices = ARENA_FLOOR_POLYGON.map(({ x, y }) => ({
+      x: WORLD_ORIGIN.x + x,
+      y: WORLD_ORIGIN.y + y,
+    }));
+    vertices.forEach((vertex, index) => {
+      const next = vertices[(index + 1) % vertices.length];
+      if (!next) return;
+      const color = index % 3 === 0
+        ? COLORS.floorHigh
+        : index % 2 === 0
+          ? COLORS.floorPanel
+          : COLORS.floorLow;
+      g.poly([
+        WORLD_ORIGIN.x, WORLD_ORIGIN.y,
+        vertex.x, vertex.y,
+        next.x, next.y,
+      ]).fill({ color, alpha: 0.72 });
+    });
+
+    vertices.forEach((vertex) => {
+      g.moveTo(WORLD_ORIGIN.x, WORLD_ORIGIN.y)
+        .lineTo(vertex.x, vertex.y)
+        .stroke({ color: COLORS.shellFace, alpha: 0.22, width: 1 });
+    });
+    [108, 218, 326].forEach((radius, index) => {
+      g.circle(WORLD_ORIGIN.x, WORLD_ORIGIN.y, radius)
+        .stroke({ color: COLORS.cyanDim, alpha: 0.17 - index * 0.025, width: 1 });
+    });
+    g.poly([210, 196, 348, 116, 1252, 116, 1390, 196, 1390, 704, 1252, 784, 348, 784, 210, 704])
+      .stroke({ color: COLORS.shellFace, alpha: 0.54, width: 1 });
     g.moveTo(280, WORLD_ORIGIN.y).lineTo(1320, WORLD_ORIGIN.y)
-      .stroke({ color: COLORS.cyan, alpha: 0.18, width: 1 });
+      .stroke({ color: COLORS.cyanDim, alpha: 0.18, width: 1 });
     g.moveTo(WORLD_ORIGIN.x, 150).lineTo(WORLD_ORIGIN.x, 710)
-      .stroke({ color: COLORS.cyan, alpha: 0.14, width: 1 });
-    for (let angle = 0; angle < Math.PI * 2; angle += Math.PI / 6) {
-      const inner = fromAngle(angle, 306);
-      const outer = fromAngle(angle, 318);
-      g.moveTo(WORLD_ORIGIN.x + inner.x, WORLD_ORIGIN.y + inner.y)
-        .lineTo(WORLD_ORIGIN.x + outer.x, WORLD_ORIGIN.y + outer.y)
-        .stroke({ color: COLORS.cyan, alpha: 0.42, width: 2 });
+      .stroke({ color: COLORS.cyanDim, alpha: 0.15, width: 1 });
+
+    for (let index = 0; index < 8; index += 1) {
+      const angle = index * (Math.PI / 4);
+      const center = fromAngle(angle, 314);
+      const marker = { x: WORLD_ORIGIN.x + center.x, y: WORLD_ORIGIN.y + center.y };
+      g.poly(this.orientedRect(marker, angle, 7, 3.5))
+        .fill(COLORS.shellShadow)
+        .stroke({ color: COLORS.cyanDim, alpha: 0.28, width: 1 });
     }
+
+    g.poly(this.offsetPoints(ARENA_FLOOR_SCREEN, 4, 5))
+      .stroke({ color: COLORS.void, alpha: 0.95, width: 22 });
+    g.poly(ARENA_FLOOR_SCREEN)
+      .stroke({ color: COLORS.armorShadow, alpha: 1, width: 18 });
+    g.poly(ARENA_FLOOR_SCREEN)
+      .stroke({ color: COLORS.armor, alpha: 1, width: 11 });
+  }
+
+  private drawStaticRail(g: Graphics): void {
+    g.poly(ARENA_FLOOR_SCREEN)
+      .stroke({ color: COLORS.armorHigh, alpha: 0.52, width: 5 });
+    ARENA_FLOOR_POLYGON.forEach(({ x, y }) => {
+      const center = { x: WORLD_ORIGIN.x + x, y: WORLD_ORIGIN.y + y };
+      g.poly(this.regularPolygon(center, 10, 8, Math.PI / 8))
+        .fill(COLORS.armorShadow)
+        .stroke({ color: COLORS.armorHigh, alpha: 0.72, width: 2 });
+      g.circle(center.x, center.y, 2).fill({ color: COLORS.magenta, alpha: 0.52 });
+    });
+
+    const clamps = [
+      { center: { x: 800, y: 94 }, angle: 0 },
+      { center: { x: 800, y: 806 }, angle: 0 },
+      { center: { x: 188, y: 450 }, angle: Math.PI / 2 },
+      { center: { x: 1412, y: 450 }, angle: Math.PI / 2 },
+    ];
+    clamps.forEach(({ center, angle }) => {
+      g.poly(this.orientedRect({ x: center.x + 3, y: center.y + 4 }, angle, 19, 8))
+        .fill(COLORS.void);
+      g.poly(this.orientedRect(center, angle, 18, 7))
+        .fill(COLORS.armor)
+        .stroke({ color: COLORS.armorFace, alpha: 0.68, width: 2 });
+      g.poly(this.orientedRect(center, angle, 9, 2))
+        .fill({ color: COLORS.cyanDim, alpha: 0.42 });
+    });
+  }
+
+  private drawArenaSignals(g: Graphics, frame: RenderFrame): void {
     if (frame.bossVulnerable) {
       this.dashedCircle(g, WORLD_ORIGIN.x, WORLD_ORIGIN.y, COMBAT_TUNING.breakRange, 18, 12, COLORS.cyan, 0.25);
     }
@@ -186,48 +418,118 @@ export class ArenaRenderer {
 
   private drawContainmentRail(g: Graphics, frame: RenderFrame): void {
     const threatVisible = frame.sample?.phase === 'telegraph' || frame.sample?.phase === 'active';
-    const pulse = threatVisible ? 0.78 + Math.sin(frame.nowMs * 0.012) * 0.08 : 0.64;
+    const pulse = threatVisible
+      ? this.reducedMotion ? 0.78 : 0.78 + Math.sin(frame.nowMs * 0.006) * 0.06
+      : 0.62;
     g.poly(ARENA_FLOOR_SCREEN)
-      .stroke({ color: COLORS.magenta, alpha: threatVisible ? 0.13 : 0.08, width: 10 });
+      .stroke({ color: COLORS.magenta, alpha: threatVisible ? 0.12 : 0.07, width: 9 });
     g.poly(ARENA_FLOOR_SCREEN)
-      .stroke({ color: COLORS.magenta, alpha: pulse, width: 3 });
+      .stroke({ color: COLORS.magenta, alpha: pulse, width: 2 });
   }
 
-  private drawFixtures(g: Graphics, nowMs: number): void {
-    const pulse = 0.7 + Math.sin(nowMs * 0.004) * 0.18;
-
+  private drawFixtureBodies(g: Graphics): void {
     // Forked relay pylon, upper-left.
-    g.poly([346, 178, 368, 162, 390, 178, 384, 216, 352, 216])
-      .fill(COLORS.armor).stroke({ color: COLORS.cyanDim, width: 2 });
-    this.bloomLine(g, { x: 368, y: 176 }, { x: 368, y: 132 }, COLORS.cyan, 4, pulse);
-    this.bloomLine(g, { x: 368, y: 143 }, { x: 347, y: 122 }, COLORS.cyan, 4, pulse);
-    this.bloomLine(g, { x: 368, y: 143 }, { x: 389, y: 122 }, COLORS.cyan, 4, pulse);
+    const relay = { x: 340, y: 105 };
+    g.poly(this.regularPolygon({ x: relay.x + 6, y: relay.y + 7 }, 34, 6, Math.PI / 6))
+      .fill(COLORS.void);
+    g.poly(this.regularPolygon(relay, 34, 6, Math.PI / 6))
+      .fill(COLORS.shell)
+      .stroke({ color: COLORS.armorFace, alpha: 0.62, width: 2 });
+    g.poly(this.regularPolygon(relay, 26, 6, Math.PI / 6))
+      .fill(COLORS.armorShadow)
+      .stroke({ color: COLORS.cyanDim, alpha: 0.42, width: 2 });
+    g.poly([324, 108, 332, 95, 348, 95, 356, 108, 351, 127, 329, 127])
+      .fill(COLORS.armor)
+      .stroke({ color: COLORS.armorHigh, alpha: 0.7, width: 2 });
+    this.drawStructuralLine(g, { x: 340, y: 103 }, { x: 340, y: 71 }, 7);
+    this.drawStructuralLine(g, { x: 340, y: 81 }, { x: 324, y: 60 }, 7);
+    this.drawStructuralLine(g, { x: 340, y: 81 }, { x: 356, y: 60 }, 7);
 
     // Prism shield node, upper-right.
-    g.poly([1212, 150, 1248, 126, 1284, 150, 1274, 194, 1222, 194])
-      .fill(COLORS.armor).stroke({ color: COLORS.magenta, alpha: 0.6, width: 2 });
-    g.poly([1248, 136, 1267, 154, 1248, 184, 1229, 154])
-      .stroke({ color: COLORS.magenta, alpha: pulse, width: 3 });
-    g.moveTo(1248, 136).lineTo(1248, 184).stroke({ color: COLORS.magenta, alpha: 0.55, width: 2 });
+    const prism = { x: 1260, y: 105 };
+    g.poly(this.regularPolygon({ x: prism.x + 6, y: prism.y + 7 }, 36, 6, Math.PI / 6))
+      .fill(COLORS.void);
+    g.poly(this.regularPolygon(prism, 36, 6, Math.PI / 6))
+      .fill(COLORS.shell)
+      .stroke({ color: COLORS.armorFace, alpha: 0.62, width: 2 });
+    g.poly(this.regularPolygon(prism, 27, 6, Math.PI / 6))
+      .fill(COLORS.armorShadow)
+      .stroke({ color: COLORS.magenta, alpha: 0.34, width: 2 });
+    g.poly(this.offsetPoints([1260, 73, 1277, 101, 1260, 134, 1243, 101], 5, 6))
+      .fill(COLORS.void);
+    g.poly([1260, 73, 1277, 101, 1260, 134, 1243, 101])
+      .fill(COLORS.armor)
+      .stroke({ color: COLORS.armorFace, alpha: 0.74, width: 2 });
+    g.poly([1260, 78, 1260, 129, 1247, 101])
+      .fill({ color: COLORS.armorHigh, alpha: 0.52 });
+    g.poly([1260, 78, 1273, 101, 1260, 129])
+      .fill({ color: COLORS.armorFace, alpha: 0.38 });
 
-    // Three camera masts, lower-left.
-    [340, 382, 424].forEach((x, index) => {
-      const height = 54 + index * 11;
-      g.moveTo(x, 700).lineTo(x + 5, 700 - height).stroke({ color: COLORS.white, alpha: 0.45, width: 3 });
-      g.circle(x, 704, 8).fill(COLORS.armorHigh).stroke({ color: COLORS.cyanDim, width: 1 });
-      g.poly([x - 4, 700 - height, x + 14, 694 - height, x + 18, 703 - height, x, 708 - height])
-        .fill(COLORS.white).stroke({ color: COLORS.cyanDim, width: 1 });
+    // Three camera masts, left service trench.
+    [197, 224, 251].forEach((x, index) => {
+      const baseY = 600 + index * 18;
+      const height = 54 + index * 8;
+      const headY = baseY - height;
+      g.poly(this.regularPolygon({ x: x + 5, y: baseY + 6 }, 14, 6, Math.PI / 6))
+        .fill(COLORS.void);
+      g.poly(this.regularPolygon({ x, y: baseY }, 14, 6, Math.PI / 6))
+        .fill(COLORS.armor)
+        .stroke({ color: COLORS.armorFace, alpha: 0.62, width: 2 });
+      this.drawStructuralLine(g, { x, y: baseY - 7 }, { x: x + 5, y: headY }, 5);
+      g.poly(this.offsetPoints([x - 7, headY - 4, x + 14, headY - 10, x + 23, headY - 2, x, headY + 7], 4, 5))
+        .fill(COLORS.void);
+      g.poly([x - 7, headY - 4, x + 14, headY - 10, x + 23, headY - 2, x, headY + 7])
+        .fill(COLORS.armorHigh)
+        .stroke({ color: COLORS.armorFace, alpha: 0.7, width: 2 });
     });
 
     // Maintenance pod, lower-right.
-    g.poly([1212, 656, 1268, 642, 1301, 674, 1287, 724, 1224, 730, 1198, 696])
-      .fill(COLORS.armor).stroke({ color: COLORS.red, alpha: 0.65, width: 2 });
-    g.poly([1249, 666, 1270, 702, 1228, 702])
-      .stroke({ color: COLORS.red, alpha: pulse, width: 3 });
-    g.moveTo(1240, 728).bezierCurveTo(1240, 754, 1210, 760, 1207, 788)
-      .stroke({ color: COLORS.red, alpha: 0.72, width: 4 });
-    g.moveTo(1260, 730).bezierCurveTo(1262, 756, 1235, 772, 1237, 800)
-      .stroke({ color: COLORS.red, alpha: 0.5, width: 3 });
+    const pod = [1200, 774, 1230, 750, 1284, 756, 1304, 790, 1288, 831, 1226, 839, 1198, 810];
+    g.poly(this.offsetPoints(pod, 8, 10)).fill(COLORS.void);
+    g.poly(pod)
+      .fill(COLORS.shell)
+      .stroke({ color: COLORS.armorFace, alpha: 0.62, width: 2 });
+    g.poly([1213, 778, 1237, 762, 1277, 766, 1291, 791, 1279, 819, 1232, 826, 1211, 806])
+      .fill(COLORS.armor)
+      .stroke({ color: COLORS.red, alpha: 0.34, width: 2 });
+    g.poly([1249, 772, 1270, 809, 1228, 809])
+      .fill(COLORS.armorShadow)
+      .stroke({ color: COLORS.armorFace, alpha: 0.56, width: 2 });
+    g.moveTo(1240, 833).bezierCurveTo(1240, 844, 1214, 846, 1207, 858)
+      .stroke({ color: COLORS.void, alpha: 0.92, width: 10 });
+    g.moveTo(1240, 833).bezierCurveTo(1240, 844, 1214, 846, 1207, 858)
+      .stroke({ color: COLORS.armorHigh, alpha: 0.72, width: 4 });
+    g.moveTo(1261, 832).bezierCurveTo(1264, 845, 1243, 850, 1237, 860)
+      .stroke({ color: COLORS.void, alpha: 0.92, width: 9 });
+    g.moveTo(1261, 832).bezierCurveTo(1264, 845, 1243, 850, 1237, 860)
+      .stroke({ color: COLORS.armor, alpha: 0.82, width: 4 });
+  }
+
+  private drawFixtureLights(g: Graphics, nowMs: number): void {
+    const pulse = this.reducedMotion ? 0.68 : 0.64 + Math.sin(nowMs * 0.003) * 0.08;
+
+    this.bloomLine(g, { x: 340, y: 103 }, { x: 340, y: 71 }, COLORS.cyan, 2, pulse * 0.66);
+    this.bloomLine(g, { x: 340, y: 81 }, { x: 324, y: 60 }, COLORS.cyan, 2, pulse * 0.66);
+    this.bloomLine(g, { x: 340, y: 81 }, { x: 356, y: 60 }, COLORS.cyan, 2, pulse * 0.66);
+    g.circle(324, 60, 3).fill({ color: COLORS.cyan, alpha: pulse * 0.64 });
+    g.circle(356, 60, 3).fill({ color: COLORS.cyan, alpha: pulse * 0.64 });
+
+    g.poly([1260, 78, 1273, 101, 1260, 129, 1247, 101])
+      .stroke({ color: COLORS.magenta, alpha: pulse * 0.58, width: 2 });
+    g.moveTo(1260, 78).lineTo(1260, 129)
+      .stroke({ color: COLORS.magenta, alpha: pulse * 0.42, width: 1 });
+
+    [197, 224, 251].forEach((x, index) => {
+      const baseY = 600 + index * 18;
+      const headY = baseY - (54 + index * 8);
+      g.circle(x + 19, headY - 3, 3)
+        .fill({ color: COLORS.cyan, alpha: pulse * (0.42 - index * 0.04) });
+    });
+
+    g.poly([1249, 779, 1262, 803, 1236, 803])
+      .stroke({ color: COLORS.red, alpha: pulse * 0.5, width: 2 });
+    g.circle(1218, 792, 3).fill({ color: COLORS.red, alpha: pulse * 0.42 });
+    g.circle(1283, 792, 3).fill({ color: COLORS.red, alpha: pulse * 0.42 });
   }
 
   private drawHazards(g: Graphics, frame: RenderFrame): void {
@@ -315,7 +617,8 @@ export class ArenaRenderer {
 
   private drawBoss(g: Graphics, frame: RenderFrame): void {
     const openOffset = frame.bossVulnerable ? 4 : 0;
-    const rotation = frame.nowMs * (frame.pressure ? 0.00042 : 0.00023);
+    const motionNowMs = this.reducedMotion ? 0 : frame.nowMs;
+    const rotation = motionNowMs * (frame.pressure ? 0.00042 : 0.00023);
     const hit = Math.min(1, frame.bossFlash / 75);
     const plateDistance = 67 + openOffset + hit * 3;
 
@@ -406,7 +709,9 @@ export class ArenaRenderer {
       .fill(COLORS.armorShadow).stroke({ color: COLORS.magenta, alpha: 0.82, width: 3 });
     g.poly(this.diamond(WORLD_ORIGIN.x, WORLD_ORIGIN.y, 49))
       .fill(COLORS.armorHigh).stroke({ color: COLORS.armorFace, alpha: 0.9, width: 2 });
-    const coreSize = frame.bossVulnerable ? 20 + Math.sin(frame.nowMs * 0.018) * 3 : 13;
+    const coreSize = frame.bossVulnerable
+      ? 20 + (this.reducedMotion ? 0 : Math.sin(frame.nowMs * 0.018) * 3)
+      : 13;
     if (frame.bossVulnerable) {
       g.circle(WORLD_ORIGIN.x, WORLD_ORIGIN.y, coreSize + 22)
         .fill({ color: COLORS.cyan, alpha: 0.09 });
@@ -434,18 +739,25 @@ export class ArenaRenderer {
   }
 
   private drawBossBackdrop(g: Graphics): void {
-    g.circle(
-      WORLD_ORIGIN.x + 7,
-      WORLD_ORIGIN.y + 9,
-      COMBAT_TUNING.bossBodyRadius + 9,
-    ).fill({ color: COLORS.void, alpha: 0.72 });
+    g.ellipse(
+      WORLD_ORIGIN.x + 13,
+      WORLD_ORIGIN.y + 17,
+      COMBAT_TUNING.bossBodyRadius + 21,
+      COMBAT_TUNING.bossBodyRadius * 0.7,
+    ).fill({ color: COLORS.void, alpha: 0.38 });
+    g.ellipse(
+      WORLD_ORIGIN.x + 8,
+      WORLD_ORIGIN.y + 11,
+      COMBAT_TUNING.bossBodyRadius + 8,
+      COMBAT_TUNING.bossBodyRadius * 0.58,
+    ).fill({ color: COLORS.shellVoid, alpha: 0.58 });
   }
 
   private drawPlayer(g: Graphics, frame: RenderFrame): void {
     const position = this.toScreen(frame.playerPosition);
     const size = frame.playerDashing ? 29 : 25;
     const alpha = frame.playerInvulnerable && !frame.playerDashing
-      ? 0.5 + (Math.sin(frame.nowMs * 0.05) + 1) * 0.22
+      ? this.reducedMotion ? 0.68 : 0.5 + (Math.sin(frame.nowMs * 0.05) + 1) * 0.22
       : 1;
     const aimStart = fromAngle(frame.playerAngle, size * 0.72);
     const aimEnd = fromAngle(frame.playerAngle, 58);
@@ -523,7 +835,7 @@ export class ArenaRenderer {
   }
 
   private drawPressure(g: Graphics, nowMs: number): void {
-    const alpha = 0.12 + (Math.sin(nowMs * 0.012) + 1) * 0.035;
+    const alpha = this.reducedMotion ? 0.145 : 0.12 + (Math.sin(nowMs * 0.012) + 1) * 0.035;
     g.rect(0, 0, WORLD_WIDTH, 28).fill({ color: COLORS.red, alpha });
     g.rect(0, WORLD_HEIGHT - 28, WORLD_WIDTH, 28).fill({ color: COLORS.red, alpha });
     g.rect(0, 0, 28, WORLD_HEIGHT).fill({ color: COLORS.red, alpha });
@@ -537,6 +849,45 @@ export class ArenaRenderer {
 
   private toScreen(position: Vec2): Vec2 {
     return { x: WORLD_ORIGIN.x + position.x, y: WORLD_ORIGIN.y + position.y };
+  }
+
+  private audienceSeatPosition(run: AudienceRun, row: number, seat: number): Vec2 {
+    const progress = (seat + 0.5) / run.seats;
+    return {
+      x: run.from.x + (run.to.x - run.from.x) * progress + run.outward.x * row * 10,
+      y: run.from.y + (run.to.y - run.from.y) * progress + run.outward.y * row * 10,
+    };
+  }
+
+  private offsetPoints(points: readonly number[], dx: number, dy: number): number[] {
+    return points.map((value, index) => value + (index % 2 === 0 ? dx : dy));
+  }
+
+  private regularPolygon(center: Vec2, radius: number, sides: number, rotation = 0): number[] {
+    return Array.from({ length: sides }, (_, index) => {
+      const angle = rotation + index * (Math.PI * 2 / sides);
+      return [center.x + Math.cos(angle) * radius, center.y + Math.sin(angle) * radius];
+    }).flat();
+  }
+
+  private orientedRect(center: Vec2, angle: number, halfLength: number, halfWidth: number): number[] {
+    const forward = fromAngle(angle, halfLength);
+    const side = fromAngle(angle + Math.PI / 2, halfWidth);
+    return [
+      center.x - forward.x - side.x, center.y - forward.y - side.y,
+      center.x + forward.x - side.x, center.y + forward.y - side.y,
+      center.x + forward.x + side.x, center.y + forward.y + side.y,
+      center.x - forward.x + side.x, center.y - forward.y + side.y,
+    ];
+  }
+
+  private drawStructuralLine(g: Graphics, from: Vec2, to: Vec2, width: number): void {
+    g.moveTo(from.x + 4, from.y + 5).lineTo(to.x + 4, to.y + 5)
+      .stroke({ color: COLORS.void, alpha: 0.94, width: width + 6 });
+    g.moveTo(from.x, from.y).lineTo(to.x, to.y)
+      .stroke({ color: COLORS.armorHigh, alpha: 0.96, width });
+    g.moveTo(from.x - 1, from.y - 1).lineTo(to.x - 1, to.y - 1)
+      .stroke({ color: COLORS.armorFace, alpha: 0.58, width: Math.max(1, width * 0.24) });
   }
 
   private diamond(x: number, y: number, radius: number): number[] {

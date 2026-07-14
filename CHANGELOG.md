@@ -2,6 +2,25 @@
 
 All notable changes are recorded here. The project uses semantic versioning.
 
+## [0.5.0] — 2026-07-14
+
+### Changed
+
+- Split persistent venue construction from dynamic lights, hazards, actors, and effects so the arena shell is drawn once instead of rebuilt every frame.
+- Materialized the octagonal venue with restrained floor sectors and seams, a layered containment rail, stepped audience stands, and deterministic spectator lights.
+- Rebuilt the cyan relay, magenta prism, camera masts, and red maintenance pod as distinct fixtures in the service band between the reachable collider envelope and the visible containment rail.
+- Added contact depth and local emissive response while preserving the semantic hierarchy: white/cyan challenger and core, dashed magenta forecasts, and solid red danger remain dominant.
+- Added reduced-motion and normalized frame-pacing QA hooks without changing combat behavior.
+
+### Verified
+
+- Kept all 28 automated checks passing; TypeScript, production build, and diff validation are clean on Node 22.23.1.
+- Inspected rendered entry, real-input dash-counter, V.37 pressure, final payoff, and 390×844 mobile spectator states against the approved concepts.
+- Completed a real-input V.01 → V.37 run through `LAST CONQUEROR`; V.37 fell in 14.30 seconds across two attempts and eight accepted dash commits. Debug support restored only challenger integrity and never damaged or advanced HEIR.
+- Confirmed live reduced motion freezes the isolated venue crop exactly across two samples (`0` changed pixels) while gameplay continues.
+- Rebaselined V.37 pressure in the same internal-browser session as `0.4.0`: both builds averaged about 6.94ms, recorded zero missed frames, and stayed below 7.9ms maximum.
+- Confirmed no mobile overflow, console warnings/errors, failed assets, or status-400+ requests.
+
 ## [0.4.0] — 2026-07-14
 
 ### Changed

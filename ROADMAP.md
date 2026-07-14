@@ -108,7 +108,7 @@ the combat grammar.
 
 ### `0.5.0` — Arena Materialized
 
-Status: **selected — unshipped**
+Status: **shipped 2026-07-14**
 
 The concepts stage the fight inside a constructed broadcast arena; the current
 build still reads as a flat neon diagram. Materialize the persistent venue first
